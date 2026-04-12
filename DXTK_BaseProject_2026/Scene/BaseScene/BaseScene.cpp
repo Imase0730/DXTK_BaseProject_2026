@@ -36,11 +36,11 @@ void BaseScene::Update(Imase::ISceneController<SceneId>& sceneController, GameCo
 // 描画
 void BaseScene::Render(GameContext& gameContext)
 {
-	auto context = gameContext.deviceResources.GetD3DDeviceContext();
-	auto& states = gameContext.commonStates;
+	gameContext;
 }
 
 // シーン切り替え時に呼び出される関数
 void BaseScene::OnEnter(GameContext& gameContext)
 {
+	gameContext;
 }
