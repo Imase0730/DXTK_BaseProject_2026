@@ -5,8 +5,8 @@
 #include "pch.h"
 #include "Game.h"
 #include "Scene/SceneId.h"
-#include "Scene/ShootingGameScene/ShootingGameScene.h"
 #include "Scene/BaseScene/BaseScene.h"
+#include "Scene/ShootingGameScene/ShootingGameScene.h"
 
 extern void ExitGame() noexcept;
 

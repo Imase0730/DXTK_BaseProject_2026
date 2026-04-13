@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ImaseLib/Task.h"
-#include "../../GameContext.h"
+#include "GameContext.h"
 #include "GameTypes.h"
 
 class PlayerTask : public Imase::Task, public IFaction

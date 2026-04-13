@@ -8,8 +8,8 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
-#include "../../ImaseLib/SceneManager.h"
-#include "../GameContext.h"
+#include "ImaseLib/SceneManager.h"
+#include "GameContext.h"
 #include "../SceneId.h"
 
 class BaseScene : public Imase::SceneBase<SceneId, GameContext>

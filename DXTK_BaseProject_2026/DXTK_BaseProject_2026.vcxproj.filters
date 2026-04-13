@@ -87,6 +87,7 @@
     <ClInclude Include="Scene\BaseScene\BaseScene.h">
       <Filter>Scene\BaseScene</Filter>
     </ClInclude>
+    <ClInclude Include="GameContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

@@ -10,7 +10,7 @@
 
 #include "ImaseLib/SceneManager.h"
 #include "ImaseLib/TaskSystem.h"
-#include "../GameContext.h"
+#include "GameContext.h"
 #include "../SceneId.h"
 #include "CollisionManager.h"
 
