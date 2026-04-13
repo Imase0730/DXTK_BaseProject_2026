@@ -34,4 +34,3 @@ rem if not exist %1"%OUT%" mkdir %1"%OUT%"
 
 rem コンバートしたcmoとddsをリソースフォルダへコピー
 rem xcopy %1"%CMO%" %1"%OUT%" /Y
-
