@@ -34,8 +34,8 @@ public:
 
 	// コンストラクタ
 	EnemyTask(
-		const GameContext& gameContext,
-		DirectX::SpriteBatch& spriteBatch,
+		GameContext* pGameContext,
+		DirectX::SpriteBatch* pSpriteBatch,
 		ID3D11ShaderResourceView* pTexture,
 		DirectX::SimpleMath::Vector2 position
 	);
@@ -61,10 +61,10 @@ public:
 private:
 
 	// ゲームコンテキストへのポインタ
-	const GameContext& m_gameContext;
+	GameContext* m_pGameContext;
 
 	// スプライトバッチへのポインタ
-	DirectX::SpriteBatch& m_spriteBatch;
+	DirectX::SpriteBatch* m_pSpriteBatch;
 
 	// テクスチャへのポインタ
 	ID3D11ShaderResourceView* m_pTexture;

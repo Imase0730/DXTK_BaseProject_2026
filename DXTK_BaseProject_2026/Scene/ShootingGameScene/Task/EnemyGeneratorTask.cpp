@@ -14,12 +14,12 @@ using namespace DirectX;
 
 // コンストラクタ
 EnemyGeneratorTask::EnemyGeneratorTask(
-    const GameContext& gameContext,
-    DirectX::SpriteBatch& spriteBatch,
+    GameContext* pGameContext,
+    DirectX::SpriteBatch* pSpriteBatch,
     ID3D11ShaderResourceView* pTexture
 )
-    : m_gameContext(gameContext)
-    , m_spriteBatch(spriteBatch)
+    : m_pGameContext(pGameContext)
+    , m_pSpriteBatch(pSpriteBatch)
     , m_pTexture(pTexture)
 {
     // タグを設定
@@ -39,12 +39,12 @@ bool EnemyGeneratorTask::Update(float elapsedTime)
         m_spawnTimer = 0.0f;
 
         // 画面サイズ取得
-        RECT rect = m_gameContext.deviceResources.GetOutputSize();
+        RECT rect = m_pGameContext->deviceResources.GetOutputSize();
 
         // 敵タスクを生成（画面上から出現）
         AddChild<EnemyTask>(
-            m_gameContext,
-            m_spriteBatch,
+            m_pGameContext,
+            m_pSpriteBatch,
             m_pTexture,
             SimpleMath::Vector2(static_cast<float>(std::rand() % (rect.right - EnemyTask::SIZE)), -EnemyTask::SIZE)
         );

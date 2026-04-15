@@ -15,13 +15,13 @@ using namespace DirectX;
 
 // コンストラクタ
 EnemyTask::EnemyTask(
-    const GameContext& gameContext,
-    DirectX::SpriteBatch& spriteBatch,
+    GameContext* pGameContext,
+    DirectX::SpriteBatch* pSpriteBatch,
     ID3D11ShaderResourceView* pTexture,
     DirectX::SimpleMath::Vector2 position
 )
-    : m_gameContext(gameContext)
-    , m_spriteBatch(spriteBatch)
+    : m_pGameContext(pGameContext)
+    , m_pSpriteBatch(pSpriteBatch)
     , m_pTexture(pTexture)
     , m_position(position)
 {
@@ -33,7 +33,7 @@ EnemyTask::EnemyTask(
 bool EnemyTask::Update(float elapsedTime)
 {
     // 画面サイズ取得
-    RECT rect = m_gameContext.deviceResources.GetOutputSize();
+    RECT rect = m_pGameContext->deviceResources.GetOutputSize();
 
     // 下へ移動
     m_position.y += SPEED * elapsedTime;
@@ -54,8 +54,8 @@ bool EnemyTask::Update(float elapsedTime)
 
         // 弾タスクを生成
         GetParent()->AddChild<BulletTask>(
-            m_gameContext,
-            m_spriteBatch,
+            m_pGameContext,
+            m_pSpriteBatch,
             m_pTexture,
             // 敵の中央下から弾を発射
             SimpleMath::Vector2(
@@ -77,7 +77,7 @@ void EnemyTask::Render()
     RECT srcRect = { 96, 0, 96 + 32, 32 };
 
     // 敵の描画（2倍の大きさで表示）
-    m_spriteBatch.Draw(m_pTexture, m_position, &srcRect, Colors::White, 0.0f, { 0.0f, 0.0f }, 2.0f);
+    m_pSpriteBatch->Draw(m_pTexture, m_position, &srcRect, Colors::White, 0.0f, { 0.0f, 0.0f }, 2.0f);
 }
 
 // 境界を取得する関数
@@ -98,8 +98,8 @@ void EnemyTask::Explotion()
 {
     // 爆発エフェクトタスクを生成
     GetParent()->AddChild<ExplosionTask>(
-        m_gameContext,
-        m_spriteBatch,
+        m_pGameContext,
+        m_pSpriteBatch,
         m_pTexture,
         m_position
     );

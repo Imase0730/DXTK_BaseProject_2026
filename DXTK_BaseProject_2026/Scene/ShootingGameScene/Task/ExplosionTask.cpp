@@ -13,13 +13,13 @@ using namespace DirectX;
 
 // コンストラクタ
 ExplosionTask::ExplosionTask(
-    const GameContext& gameContext,
-    DirectX::SpriteBatch& spriteBatch,
+    GameContext* pGameContext,
+    DirectX::SpriteBatch* pSpriteBatch,
     ID3D11ShaderResourceView* pTexture,
     DirectX::SimpleMath::Vector2 position
 )
-    : m_gameContext(gameContext)
-    , m_spriteBatch(spriteBatch)
+    : m_pGameContext(pGameContext)
+    , m_pSpriteBatch(pSpriteBatch)
     , m_pTexture(pTexture)
     , m_position(position)
 {
@@ -46,7 +46,7 @@ bool ExplosionTask::Update(float elapsedTime)
 void ExplosionTask::Render()
 {
     // 爆発の描画（4倍の大きさで表示）
-    m_spriteBatch.Draw(
+    m_pSpriteBatch->Draw(
         m_pTexture,
         m_position,
         &ExplosionSpritesRect[m_animation],

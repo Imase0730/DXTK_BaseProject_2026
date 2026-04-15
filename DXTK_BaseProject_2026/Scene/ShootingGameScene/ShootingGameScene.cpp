@@ -76,12 +76,12 @@ void ShootingGameScene::OnEnter(GameContext& gameContext)
 	// プレイヤータスクを生成
 	RECT rect = gameContext.deviceResources.GetOutputSize();
 	m_taskSystem.GetRoot()->AddChild<PlayerTask>(
-		gameContext,
-		*m_spriteBatch,
+		&gameContext,
+		m_spriteBatch.get(),
 		m_texture.Get(),
 		SimpleMath::Vector2((rect.right - PlayerTask::SIZE) / 2.0f, 600.0f)	// 初期位置（画面中央）
 	);
 
 	// 敵ジェネレータタスクを生成
-	m_taskSystem.GetRoot()->AddChild<EnemyGeneratorTask>(gameContext, *m_spriteBatch, m_texture.Get());
+	m_taskSystem.GetRoot()->AddChild<EnemyGeneratorTask>(&gameContext, m_spriteBatch.get(), m_texture.Get());
 }
