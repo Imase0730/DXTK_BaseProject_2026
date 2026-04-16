@@ -7,6 +7,7 @@
 #include "Scene/SceneId.h"
 #include "Scene/BaseScene/BaseScene.h"
 #include "Scene/ShootingGameScene/ShootingGameScene.h"
+#include "Scene/SpriteTestScene/SpriteTestScene.h"
 
 extern void ExitGame() noexcept;
 
@@ -50,6 +51,7 @@ void Game::Initialize(HWND window, int width, int height)
     // シーンの登録
     m_sceneManager.RegisterScene<BaseScene>(SceneId::BaseScene);
     m_sceneManager.RegisterScene<ShootingGameScene>(SceneId::ShootingGameScene);
+    m_sceneManager.RegisterScene<SpriteTestScene>(SceneId::SpriteTestScene);
 
     // ゲームコンテキストの設定
     m_gameContext.emplace(
@@ -62,7 +64,7 @@ void Game::Initialize(HWND window, int width, int height)
     );
 
     // 起動シーンの設定
-    m_sceneManager.SetFirstScene(SceneId::BaseScene, *m_gameContext);
+    m_sceneManager.SetFirstScene(SceneId::SpriteTestScene, *m_gameContext);
 }
 
 #pragma region Frame Update

@@ -202,6 +202,7 @@
     <ClInclude Include="Scene\ShootingGameScene\Task\ExplosionTask.h" />
     <ClInclude Include="Scene\ShootingGameScene\Task\GameTypes.h" />
     <ClInclude Include="Scene\ShootingGameScene\Task\PlayerTask.h" />
+    <ClInclude Include="Scene\SpriteTestScene\SpriteTestScene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\DeviceResources.cpp" />
@@ -227,6 +228,7 @@
     <ClCompile Include="Scene\ShootingGameScene\Task\EnemyTask.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\Task\ExplosionTask.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\Task\PlayerTask.cpp" />
+    <ClCompile Include="Scene\SpriteTestScene\SpriteTestScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

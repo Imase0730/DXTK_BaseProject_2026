@@ -14,4 +14,5 @@ enum class SceneId : uint8_t
 {
 	BaseScene,
 	ShootingGameScene,
+	SpriteTestScene,
 };

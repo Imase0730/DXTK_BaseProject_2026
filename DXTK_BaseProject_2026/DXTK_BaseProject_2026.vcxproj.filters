@@ -26,6 +26,9 @@
     <Filter Include="Scene\BaseScene">
       <UniqueIdentifier>{7cc6ab73-d1d8-4289-8885-6c28a7003a7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\SpriteTestScene">
+      <UniqueIdentifier>{0345b067-bf52-41b3-865d-7cdcd50402bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -88,6 +91,9 @@
       <Filter>Scene\BaseScene</Filter>
     </ClInclude>
     <ClInclude Include="GameContext.h" />
+    <ClInclude Include="Scene\SpriteTestScene\SpriteTestScene.h">
+      <Filter>Scene\SpriteTestScene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -137,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="Scene\BaseScene\BaseScene.cpp">
       <Filter>Scene\BaseScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\SpriteTestScene\SpriteTestScene.cpp">
+      <Filter>Scene\SpriteTestScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
