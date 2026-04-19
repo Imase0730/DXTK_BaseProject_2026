@@ -8,18 +8,21 @@
 //--------------------------------------------------------------------------------------
 #include "pch.h"
 #include "DebugCamera.h"
-#include "Mouse.h"
 
 using namespace DirectX;
-using namespace Imase;
 
-const float DebugCamera::DEFAULT_CAMERA_DISTANCE = 5.0f;
-
-//--------------------------------------------------------------------------------------
 // コンストラクタ
-//--------------------------------------------------------------------------------------
-DebugCamera::DebugCamera(int windowWidth, int windowHeight)
-	: m_yAngle(0.0f), m_yTmp(0.0f), m_xAngle(0.0f), m_xTmp(0.0f), m_x(0), m_y(0), m_scrollWheelValue(0), m_screenW(windowWidth), m_screenH(windowHeight)
+Imase::DebugCamera::DebugCamera(int windowWidth, int windowHeight)
+	: m_yAngle(0.0f)
+	, m_yTmp(0.0f)
+	, m_xAngle(0.0f)
+	, m_xTmp(0.0f)
+	, m_x(0)
+	, m_y(0)
+	, m_scrollWheelValue(0)
+	, m_screenW(windowWidth)
+	, m_screenH(windowHeight)
+	, m_isActive(true)
 {
 	SetWindowSize(windowWidth, windowHeight);
 
@@ -27,11 +30,11 @@ DebugCamera::DebugCamera(int windowWidth, int windowHeight)
 	Mouse::Get().ResetScrollWheelValue();
 }
 
-//--------------------------------------------------------------------------------------
 // 更新
-//--------------------------------------------------------------------------------------
-void DebugCamera::Update(bool isActive)
+void Imase::DebugCamera::Update(float elapsedTime)
 {
+	elapsedTime;
+
 	auto state = Mouse::Get().GetState();
 
 	// 相対モードなら何もしない
@@ -53,9 +56,9 @@ void DebugCamera::Update(bool isActive)
 		m_yAngle = m_yTmp;
 	}
 	// マウスのボタンが押されていたらカメラを移動させる
-	if (isActive && state.leftButton)
+	if (m_isActive && state.leftButton)
 	{
-		Motion(state.x, state.y);
+		MoveCamera(state.x, state.y);
 	}
 
 	// マウスのフォイール値を取得
@@ -86,10 +89,8 @@ void DebugCamera::Update(bool isActive)
 	m_view = SimpleMath::Matrix::CreateLookAt(eye, target, up);
 }
 
-//--------------------------------------------------------------------------------------
-// 行列の生成
-//--------------------------------------------------------------------------------------
-void DebugCamera::Motion(int x, int y)
+// カメラ移動
+void Imase::DebugCamera::MoveCamera(int x, int y)
 {
 	// マウスポインタの位置のドラッグ開始位置からの変位 (相対値)
 	float dx = (x - m_x) * m_sx;
@@ -107,30 +108,10 @@ void DebugCamera::Motion(int x, int y)
 	}
 }
 
-DirectX::SimpleMath::Matrix DebugCamera::GetCameraMatrix()
-{
-	return m_view;
-}
-
-DirectX::SimpleMath::Vector3 DebugCamera::GetEyePosition()
-{
-	return m_eye;
-}
-
-DirectX::SimpleMath::Vector3 DebugCamera::GetTargetPosition()
-{
-	return m_target;
-}
-
-void DebugCamera::SetWindowSize(int windowWidth, int windowHeight)
+// ウインドウサイズの設定
+void Imase::DebugCamera::SetWindowSize(int windowWidth, int windowHeight)
 {
 	// 画面サイズに対する相対的なスケールに調整
 	m_sx = 1.0f / float(windowWidth);
 	m_sy = 1.0f / float(windowHeight);
-}
-
-void DebugCamera::GetWindowSize(int & windowWidth, int & windowHeight)
-{
-	windowWidth = m_screenW;
-	windowHeight = m_screenH;
 }

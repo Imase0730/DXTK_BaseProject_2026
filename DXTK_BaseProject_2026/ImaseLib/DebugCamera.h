@@ -8,14 +8,16 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
+#include "CameraBase.h"
+
 namespace Imase
 {
 
 	// デバッグ用カメラクラス
-	class DebugCamera
+	class DebugCamera : public CameraBase
 	{
 		// カメラの距離
-		static const float DEFAULT_CAMERA_DISTANCE;
+		static constexpr float DEFAULT_CAMERA_DISTANCE = 5.0f;
 
 		// 横回転
 		float m_yAngle, m_yTmp;
@@ -46,53 +48,36 @@ namespace Imase
 		// スクリーンサイズ
 		int m_screenW, m_screenH;
 
+		// アクティブ
+		bool m_isActive;
+
 	private:
 
-		void Motion(int x, int y);
+		// カメラ移動
+		void MoveCamera(int x, int y);
 
 	public:
-		/// <summary>
-		/// コンストラクタ
-		/// </summary>
-		/// <param name="windowWidth">ウインドウサイズ（幅）</param>
-		/// <param name="windowHeight">ウインドウサイズ（高さ）</param>
+
+		// コンストラクタ
 		DebugCamera(int windowWidth, int windowHeight);
 
-		/// <summary>
-		/// デバッグカメラの更新
-		/// </summary>
-		/// <param name="isActive">trueの場合アクティブ化</param>
-		void Update(bool isActive = true);
+		// 更新
+		void Update(float elapsedTime) override;
 
-		/// <summary>
-		/// デバッグカメラのビュー行列の取得関数
-		/// </summary>
-		/// <returns>ビュー行列</returns>
-		DirectX::SimpleMath::Matrix GetCameraMatrix();
+		// 視点取得
+		DirectX::SimpleMath::Vector3 GetEyePosition() const override { return m_eye; }
 
-		/// <summary>
-		/// デバッグカメラの位置の取得関数
-		/// </summary>
-		/// <returns>視点の位置</returns>
-		DirectX::SimpleMath::Vector3 GetEyePosition();
+		// 注視点取得
+		DirectX::SimpleMath::Vector3 GetTargetPosition() const override { return m_target; }
 
-		/// <summary>
-		/// デバッグカメラの注視点の取得関数
-		/// </summary>
-		/// <returns>注視点の位置</returns>
-		DirectX::SimpleMath::Vector3 GetTargetPosition();
+		// ビュー行列の取得関数
+		DirectX::SimpleMath::Matrix GetCameraMatrix() const { return m_view; }
 
-		/// <summary>
-		/// 画面サイズの設定関数
-		/// </summary>
-		/// <param name="windowWidth">ウインドウサイズ（幅）</param>
-		/// <param name="windowHeight">ウインドウサイズ（高さ）</param>
+		// ウインドウサイズの設定
 		void SetWindowSize(int windowWidth, int windowHeight);
 
-		/// <summary>
-		/// 画面サイズの取得関数
-		/// </summary>
-		void GetWindowSize(int& windowWidth, int& windowHeight);
+		// アクティブ設定
+		void SetActive(bool active) { m_isActive = active; }
 	};
 
 }

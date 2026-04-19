@@ -29,6 +29,9 @@
     <Filter Include="Scene\SpriteTestScene">
       <UniqueIdentifier>{0345b067-bf52-41b3-865d-7cdcd50402bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\ModelsTestScene">
+      <UniqueIdentifier>{f69bb59f-9322-486e-821b-f5fa2038326b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -94,6 +97,18 @@
     <ClInclude Include="Scene\SpriteTestScene\SpriteTestScene.h">
       <Filter>Scene\SpriteTestScene</Filter>
     </ClInclude>
+    <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h">
+      <Filter>Scene\ModelsTestScene</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaseLib\SpringCamera.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ModelTestScene\GameCamera.h">
+      <Filter>Scene\ModelsTestScene</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaseLib\CameraBase.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -146,6 +161,15 @@
     </ClCompile>
     <ClCompile Include="Scene\SpriteTestScene\SpriteTestScene.cpp">
       <Filter>Scene\SpriteTestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelTestScene\ModelTestScene.cpp">
+      <Filter>Scene\ModelsTestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaseLib\SpringCamera.cpp">
+      <Filter>ImaseLib</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelTestScene\GameCamera.cpp">
+      <Filter>Scene\ModelsTestScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
