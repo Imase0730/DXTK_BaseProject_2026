@@ -100,12 +100,6 @@
     <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClInclude>
-    <ClInclude Include="ImaseLib\SpringCamera.h">
-      <Filter>ImaseLib</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\ModelTestScene\GameCamera.h">
-      <Filter>Scene\ModelsTestScene</Filter>
-    </ClInclude>
     <ClInclude Include="ImaseLib\CameraBase.h">
       <Filter>ImaseLib</Filter>
     </ClInclude>
@@ -163,12 +157,6 @@
       <Filter>Scene\SpriteTestScene</Filter>
     </ClCompile>
     <ClCompile Include="Scene\ModelTestScene\ModelTestScene.cpp">
-      <Filter>Scene\ModelsTestScene</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaseLib\SpringCamera.cpp">
-      <Filter>ImaseLib</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\ModelTestScene\GameCamera.cpp">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClCompile>
   </ItemGroup>
