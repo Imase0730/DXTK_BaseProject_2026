@@ -25,9 +25,4 @@
       <Filter>Textures</Filter>
     </ImageContentTask>
   </ItemGroup>
-  <ItemGroup>
-    <MeshContentTask Include="Models\Monkey.obj">
-      <Filter>Models</Filter>
-    </MeshContentTask>
-  </ItemGroup>
 </Project>
