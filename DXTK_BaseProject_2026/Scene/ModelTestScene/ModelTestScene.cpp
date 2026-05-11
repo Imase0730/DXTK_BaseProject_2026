@@ -31,28 +31,53 @@ void ModelTestScene::Render(GameContext& gameContext)
     // DirectX3Dのデバイスコンテキストを取得する
     auto context = gameContext.deviceResources.GetD3DDeviceContext();
 
+	SimpleMath::Matrix world, view;
+
 	// デバッグカメラからビュー行列を取得する
-    SimpleMath::Matrix view = m_debugCamera->GetCameraMatrix();
+    view = m_debugCamera->GetCameraMatrix();
 
 	// ------------------------------------------------------------- //
-	
-	// 視点の位置
-    SimpleMath::Vector3 eye = { 0.0f, 2.0f, 4.0f};
 
-	// 注視点の位置
-    SimpleMath::Vector3 target = {0.0f, 0.0f, 0.0f};
+	// ----- ビューポートの設定（左側） ----- //
 
-	// ビュー行列を作成する
-	view = SimpleMath::Matrix::CreateLookAt(eye, target, SimpleMath::Vector3::Up);
+	D3D11_VIEWPORT viewport_Left[1] = {
+        0.0f,   0.0f,   // 左上の座標
+        640.0f, 720.0f, // 幅と高さ
+        0.0f,   1.0f    // 奥行の最小値と最大値
+    };
+    context->RSSetViewports(1, viewport_Left);
 
-	// ------------------------------------------------------------- //
+	// -------------------------------------- //
+
+	// スカイドームの描画
+    m_skydome->Draw(context, gameContext.commonStates, world, view, m_projection);
 
 	// グリッドフロアの描画
 	m_gridFloor->Render(context, view, m_projection);
 
 	// モデルの描画
-    SimpleMath::Matrix world;
     m_model->Draw(context, gameContext.commonStates, world, view, m_projection);
+
+	// ----- ビューポートの設定（右側） ----- //
+
+	D3D11_VIEWPORT viewport_Right[1] = {
+        640.0f,   0.0f, // 左上の座標
+        640.0f, 720.0f,	// 幅と高さ
+        0.0f,   1.0f    // 奥行の最小値と最大値
+    };
+    context->RSSetViewports(1, viewport_Right);
+
+	// -------------------------------------- //
+
+	// スカイドームの描画
+    m_skydome->Draw(context, gameContext.commonStates, world, view, m_projection);
+
+    // グリッドフロアの描画
+    m_gridFloor->Render(context, view, m_projection);
+
+    // モデルの描画
+    m_model->Draw(context, gameContext.commonStates, world, view, m_projection);
+
 }
 
 // シーン切り替え時に呼び出される関数
@@ -77,10 +102,30 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
     m_gridFloor = std::make_unique<Imase::GridFloor>(
 		device,	context, &gameContext.commonStates);
 
-	// モデルの読み込み
+	// エフェクトを作成する工場
     EffectFactory fx(device);
     fx.SetDirectory(L"Resources/Models");	// <- ddsのフォルダ
-    m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
+
+	// スザンヌの読み込み
+	m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
+
+	// スカイドームの読み込み
+	m_skydome = Model::CreateFromCMO(device, L"Resources/Models/Skydome.cmo", fx);
+
+	// スカイドームのエフェクトを設定する（ライト影響は受けない）
+    m_skydome->UpdateEffects([&](IEffect* effect)
+		{
+			BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
+			if (basicEffect)
+			{
+                basicEffect->SetAmbientLightColor(Colors::Black);
+                basicEffect->SetLightEnabled(0, false);
+                basicEffect->SetLightEnabled(1, false);
+                basicEffect->SetLightEnabled(2, false);
+                basicEffect->SetEmissiveColor(Colors::White);
+            }
+		}
+	);
 }
 
 // プロジェクション行列を作成する関数
@@ -94,7 +139,8 @@ DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(GameContext& 
 	// プロジェクション行列を作成
 	m = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		XMConvertToRadians(45.0f),	// 画角
-		static_cast<float>(rect.right) / static_cast<float>(rect.bottom),	// アスペクト比
+		//static_cast<float>(rect.right) / static_cast<float>(rect.bottom),	// アスペクト比
+		640.0f / 720.0f,	// アスペクト比
 		0.1f,	// Near Clip
 		1000.0f	// Far Clip
 	);

@@ -47,5 +47,8 @@ private:
 
 	// モデルハンドル
     std::unique_ptr<DirectX::Model> m_model;
+
+	// スカイドーム
+    std::unique_ptr<DirectX::Model> m_skydome;
 };
 
