@@ -100,9 +100,6 @@
     <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClInclude>
-    <ClInclude Include="ImaseLib\CameraBase.h">
-      <Filter>ImaseLib</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />

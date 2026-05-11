@@ -184,7 +184,6 @@
     <ClInclude Include="DirectXTK_Utilities\DebugDraw.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameContext.h" />
-    <ClInclude Include="ImaseLib\CameraBase.h" />
     <ClInclude Include="ImaseLib\DebugCamera.h" />
     <ClInclude Include="ImaseLib\DebugRenderer.h" />
     <ClInclude Include="ImaseLib\GridFloor.h" />

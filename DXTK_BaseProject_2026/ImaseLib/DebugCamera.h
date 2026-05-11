@@ -8,13 +8,11 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
-#include "CameraBase.h"
-
 namespace Imase
 {
 
 	// デバッグ用カメラクラス
-	class DebugCamera : public CameraBase
+	class DebugCamera
 	{
 		// カメラの距離
 		static constexpr float DEFAULT_CAMERA_DISTANCE = 5.0f;
@@ -62,13 +60,13 @@ namespace Imase
 		DebugCamera(int windowWidth, int windowHeight);
 
 		// 更新
-		void Update(float elapsedTime) override;
+		void Update(float elapsedTime);
 
 		// 視点取得
-		DirectX::SimpleMath::Vector3 GetEyePosition() const override { return m_eye; }
+		DirectX::SimpleMath::Vector3 GetEyePosition() const { return m_eye; }
 
 		// 注視点取得
-		DirectX::SimpleMath::Vector3 GetTargetPosition() const override { return m_target; }
+		DirectX::SimpleMath::Vector3 GetTargetPosition() const { return m_target; }
 
 		// ビュー行列の取得関数
 		DirectX::SimpleMath::Matrix GetCameraMatrix() const { return m_view; }
