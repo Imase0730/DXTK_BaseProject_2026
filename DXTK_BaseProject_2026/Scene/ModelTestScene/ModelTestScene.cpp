@@ -36,48 +36,11 @@ void ModelTestScene::Render(GameContext& gameContext)
 	// デバッグカメラからビュー行列を取得する
     view = m_debugCamera->GetCameraMatrix();
 
-	// ------------------------------------------------------------- //
-
-	// ----- ビューポートの設定（左側） ----- //
-
-	D3D11_VIEWPORT viewport_Left[1] = {
-        0.0f,   0.0f,   // 左上の座標
-        640.0f, 720.0f, // 幅と高さ
-        0.0f,   1.0f    // 奥行の最小値と最大値
-    };
-    context->RSSetViewports(1, viewport_Left);
-
-	// -------------------------------------- //
-
-	// スカイドームの描画
-    m_skydome->Draw(context, gameContext.commonStates, world, view, m_projection);
-
 	// グリッドフロアの描画
 	m_gridFloor->Render(context, view, m_projection);
 
 	// モデルの描画
     m_model->Draw(context, gameContext.commonStates, world, view, m_projection);
-
-	// ----- ビューポートの設定（右側） ----- //
-
-	D3D11_VIEWPORT viewport_Right[1] = {
-        640.0f,   0.0f, // 左上の座標
-        640.0f, 720.0f,	// 幅と高さ
-        0.0f,   1.0f    // 奥行の最小値と最大値
-    };
-    context->RSSetViewports(1, viewport_Right);
-
-	// -------------------------------------- //
-
-	// スカイドームの描画
-    m_skydome->Draw(context, gameContext.commonStates, world, view, m_projection);
-
-    // グリッドフロアの描画
-    m_gridFloor->Render(context, view, m_projection);
-
-    // モデルの描画
-    m_model->Draw(context, gameContext.commonStates, world, view, m_projection);
-
 }
 
 // シーン切り替え時に呼び出される関数
@@ -108,24 +71,6 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
 
 	// スザンヌの読み込み
 	m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
-
-	// スカイドームの読み込み
-	m_skydome = Model::CreateFromCMO(device, L"Resources/Models/Skydome.cmo", fx);
-
-	// スカイドームのエフェクトを設定する（ライト影響は受けない）
-    m_skydome->UpdateEffects([&](IEffect* effect)
-		{
-			BasicEffect* basicEffect = dynamic_cast<BasicEffect*>(effect);
-			if (basicEffect)
-			{
-                basicEffect->SetAmbientLightColor(Colors::Black);
-                basicEffect->SetLightEnabled(0, false);
-                basicEffect->SetLightEnabled(1, false);
-                basicEffect->SetLightEnabled(2, false);
-                basicEffect->SetEmissiveColor(Colors::White);
-            }
-		}
-	);
 }
 
 // プロジェクション行列を作成する関数
@@ -139,8 +84,7 @@ DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(GameContext& 
 	// プロジェクション行列を作成
 	m = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		XMConvertToRadians(45.0f),	// 画角
-		//static_cast<float>(rect.right) / static_cast<float>(rect.bottom),	// アスペクト比
-		640.0f / 720.0f,	// アスペクト比
+		static_cast<float>(rect.right) / static_cast<float>(rect.bottom),	// アスペクト比
 		0.1f,	// Near Clip
 		1000.0f	// Far Clip
 	);
