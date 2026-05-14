@@ -180,6 +180,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera\CameraBase.h" />
+    <ClInclude Include="Camera\FixedCamera.h" />
+    <ClInclude Include="Camera\MoveCamera.h" />
     <ClInclude Include="Common\DeviceResources.h" />
     <ClInclude Include="DirectXTK_Utilities\DebugDraw.h" />
     <ClInclude Include="Game.h" />
@@ -206,6 +209,8 @@
     <ClInclude Include="Scene\SpriteTestScene\SpriteTestScene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera\FixedCamera.cpp" />
+    <ClCompile Include="Camera\MoveCamera.cpp" />
     <ClCompile Include="Common\DeviceResources.cpp" />
     <ClCompile Include="DirectXTK_Utilities\DebugDraw.cpp" />
     <ClCompile Include="Game.cpp" />

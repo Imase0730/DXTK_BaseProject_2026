@@ -32,6 +32,9 @@
     <Filter Include="Scene\ModelsTestScene">
       <UniqueIdentifier>{f69bb59f-9322-486e-821b-f5fa2038326b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Camera">
+      <UniqueIdentifier>{b1abff34-d635-435d-a0a9-852ab6d43d09}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -100,6 +103,15 @@
     <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClInclude>
+    <ClInclude Include="Camera\CameraBase.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera\FixedCamera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera\MoveCamera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -155,6 +167,12 @@
     </ClCompile>
     <ClCompile Include="Scene\ModelTestScene\ModelTestScene.cpp">
       <Filter>Scene\ModelsTestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\FixedCamera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\MoveCamera.cpp">
+      <Filter>Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

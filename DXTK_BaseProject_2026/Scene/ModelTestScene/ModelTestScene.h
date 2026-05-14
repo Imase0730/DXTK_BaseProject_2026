@@ -15,9 +15,15 @@
 #include "ImaseLib/DebugCamera.h"
 #include "Imaselib/GridFloor.h"
 
+#include "Camera/FixedCamera.h"
+#include "Camera/MoveCamera.h"
+
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
 {
 public:
+
+	// コンストラクタ
+    ModelTestScene();
 
 	// 更新
 	void Update(Imase::ISceneController<SceneId>& sceneController, GameContext& gameContext) override;
@@ -47,5 +53,11 @@ private:
 
 	// モデルハンドル
     std::unique_ptr<DirectX::Model> m_model;
+
+	// 固定カメラ
+    Imase::FixedCamera m_fixedCamera;
+	
+	// 補間移動カメラ
+    Imase::MoveCamera m_moveCamera;
 };
 

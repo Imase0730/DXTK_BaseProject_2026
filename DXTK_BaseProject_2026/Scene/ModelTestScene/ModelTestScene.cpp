@@ -11,6 +11,13 @@
 
 using namespace DirectX;
 
+// コンストラクタ
+ModelTestScene::ModelTestScene()
+    : m_fixedCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
+    , m_moveCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
+{
+}
+
 // 更新
 void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, GameContext& gameContext)
 {
@@ -18,6 +25,21 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
+
+	// Aキーが押された
+    if (gameContext.keyboardTracker.pressed.A)
+    {
+        m_moveCamera.SetTarget(SimpleMath::Vector3(0.0f, 2.0f, 2.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+    }
+
+    // Sキーが押された
+    if (gameContext.keyboardTracker.pressed.S)
+    {
+        m_moveCamera.SetTarget(SimpleMath::Vector3(0.0f, 2.0f, 10.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+    }
+
+	// 補間移動カメラの更新
+	m_moveCamera.Update(elapsedTime);
 
 	// デバッグカメラの更新
     m_debugCamera->Update(elapsedTime);
@@ -34,9 +56,15 @@ void ModelTestScene::Render(GameContext& gameContext)
 	SimpleMath::Matrix world, view;
 
 	// デバッグカメラからビュー行列を取得する
-    view = m_debugCamera->GetCameraMatrix();
+//    view = m_debugCamera->GetCameraMatrix();
 
-	// グリッドフロアの描画
+	// 固定カメラからビュー行列を取得する
+//    view = m_fixedCamera.GetViewMatrix();
+
+	// 補間移動カメラからビュー行列を取得する
+    view = m_moveCamera.GetViewMatrix();
+
+    // グリッドフロアの描画
 	m_gridFloor->Render(context, view, m_projection);
 
 	// モデルの描画
