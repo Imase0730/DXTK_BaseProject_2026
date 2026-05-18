@@ -52,7 +52,7 @@ namespace Imase
 
         // 描画順
         int m_ot = 0;
-  
+
     public:
 
         // デストラクタ
@@ -91,16 +91,20 @@ namespace Imase
         // タスクに名前を付ける関数
         void SetName(const std::wstring& name) { m_name = name; }
         // タスクの名前を取得する関数
-        const std::wstring& GetName() { return m_name; }
+        const std::wstring& GetName() const { return m_name; }
 
         // 子追加
-        template<class T, class... Args>
+        template <class T, class... Args>
         T* AddChild(Args&&... args)
         {
+            static_assert(std::is_base_of_v<Task, T>);
+
             auto child = std::make_unique<T>(std::forward<Args>(args)...);
+
             T* raw = child.get();
 
             RequestAddChild(std::move(child));
+
             return raw;
         }
 
@@ -108,7 +112,7 @@ namespace Imase
         void ChangeParent(Task* newParent);
    
         // 親タスクを取得する関数
-        Task* GetParent() { return m_parent; }
+        Task* GetParent() const { return m_parent; }
 
     private:
         //--------------------------------
@@ -131,8 +135,8 @@ namespace Imase
         // 削除するタスクリストを作成する関数
         void CollectRemoved(std::vector<Task*>& removed);
 
-        // 死んでいる子を除去する関数
-        void Cleanup();
+        // 死んでいる子をリストから除去する関数
+        void Cleanup(std::vector<Ptr>& garbage);
 
         friend class TaskSystem;
     };

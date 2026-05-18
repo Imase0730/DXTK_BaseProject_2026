@@ -158,22 +158,6 @@ namespace Imase
         m_pendingAdd.clear();
 
         //--------------------------------
-        // タスクを削除
-        //--------------------------------
-        std::vector<Task*> removed;
-
-        // 削除するタスクリスト作成
-        m_root->CollectRemoved(removed);
-
-        for (auto* task : removed)
-        {
-            Unregister(task);
-        }
-
-        // タスクを削除
-        m_root->Cleanup();
-
-        //--------------------------------
         // ChangeParent適用
         //--------------------------------
         for (auto& p : m_pendingChangeParent)
@@ -229,24 +213,43 @@ namespace Imase
             newParent->m_children.emplace_back(std::move(self));
         }
         m_pendingChangeParent.clear();
+
+        //--------------------------------
+        // タスクを削除
+        //--------------------------------
+        std::vector<Task*> removed;
+
+        // 削除するタスクリスト作成
+        m_root->CollectRemoved(removed);
+
+        for (auto* task : removed)
+        {
+            Unregister(task);
+        }
+
+        // タスクを削除
+        std::vector<Task::Ptr> garbage;
+        m_root->Cleanup(garbage);
+        garbage.clear();
+
     }
 
     // 描画
     void TaskSystem::Render()
     {
         // 表示＆生きているタスクのリスト作成（親→子）
-        std::vector<Task*> list;
-        m_root->Collect(list);
+        m_renderList.clear();
+        m_root->Collect(m_renderList);
 
         // 描画順をソート
-        std::stable_sort(list.begin(), list.end(),
+        std::stable_sort(m_renderList.begin(), m_renderList.end(),
             [](Task* a, Task* b)
             {
                 return a->GetOt() < b->GetOt();
             });
 
         // 描画
-        for (auto* task : list)
+        for (auto* task : m_renderList)
         {
             task->Render();
         }

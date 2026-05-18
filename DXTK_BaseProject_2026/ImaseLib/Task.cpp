@@ -6,7 +6,6 @@
 // Date: 2026.4.3
 // Author: Hideyasu Imase
 //--------------------------------------------------------------------------------------
-#pragma once
 #include "pch.h"
 #include "Task.h"
 #include "TaskSystem.h"
@@ -16,7 +15,7 @@ namespace Imase
     // 子追加
     void Task::RequestAddChild(Ptr child)
     {
-        if (!m_system) return;
+        assert(m_system);
 
         m_system->RequestAddChild(this, std::move(child));
     }
@@ -53,7 +52,10 @@ namespace Imase
         // 子の更新
         for (auto& child : m_children)
         {
-            child->UpdateTree(dt);
+            if (!child->m_kill)
+            {
+                child->UpdateTree(dt);
+            }
         }
     }
 
@@ -102,19 +104,22 @@ namespace Imase
         }
     }
 
-    // 死んでいる子を除去する関数
-    void Task::Cleanup()
+    // 死んでいる子をリストから除去する関数
+    void Task::Cleanup(std::vector<Ptr>& garbage)
     {
-        // 子から
-        for (auto& child : m_children)
+        for (auto it = m_children.begin(); it != m_children.end();)
         {
-            child->Cleanup();
+            if ((*it)->m_kill)
+            {
+                garbage.emplace_back(std::move(*it));
+                it = m_children.erase(it);
+            }
+            else
+            {
+                (*it)->Cleanup(garbage);
+                ++it;
+            }
         }
-
-        // 子の中から死んでいるタスクを消去
-        m_children.erase(std::remove_if(m_children.begin(), m_children.end(),
-            [](const Ptr& t) { return t->m_kill; }),
-            m_children.end());
     }
 
     // タグの設定関数

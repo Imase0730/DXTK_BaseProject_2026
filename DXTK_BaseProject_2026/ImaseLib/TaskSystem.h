@@ -48,6 +48,9 @@ namespace Imase
         // Tagとタスクの関連付けテーブル
         std::unordered_multimap<std::wstring, Task*> m_tagMap;
 
+        // 描画用のタスクリスト
+        std::vector<Task*> m_renderList;
+
     public:
 
         // コンストラクタ
