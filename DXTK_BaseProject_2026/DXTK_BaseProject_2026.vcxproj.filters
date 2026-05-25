@@ -112,6 +112,12 @@
     <ClInclude Include="Camera\MoveCamera.h">
       <Filter>Camera</Filter>
     </ClInclude>
+    <ClInclude Include="Camera\SpringCamera.h">
+      <Filter>Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\ModelTestScene\Player.h">
+      <Filter>Scene\ModelsTestScene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -173,6 +179,12 @@
     </ClCompile>
     <ClCompile Include="Camera\MoveCamera.cpp">
       <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera\SpringCamera.cpp">
+      <Filter>Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\ModelTestScene\Player.cpp">
+      <Filter>Scene\ModelsTestScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

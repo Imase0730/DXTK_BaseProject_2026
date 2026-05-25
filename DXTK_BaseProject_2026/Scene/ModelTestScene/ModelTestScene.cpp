@@ -14,7 +14,8 @@ using namespace DirectX;
 // コンストラクタ
 ModelTestScene::ModelTestScene()
     : m_fixedCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
-    , m_moveCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
+	, m_moveCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
+	, m_springCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
 {
 }
 
@@ -26,20 +27,22 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
 
-	// Aキーが押された
-    if (gameContext.keyboardTracker.pressed.A)
-    {
-        m_moveCamera.SetTarget(SimpleMath::Vector3(0.0f, 2.0f, 2.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f);
-    }
+	// プレイヤーの後進
+    m_player->Update(elapsedTime);
 
-    // Sキーが押された
-    if (gameContext.keyboardTracker.pressed.S)
+	// カメラモードによるカメラの設定
+	switch (m_cameraMode)
     {
-        m_moveCamera.SetTarget(SimpleMath::Vector3(0.0f, 2.0f, 10.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f);
-    }
+        case ModelTestScene::CameraMode::Title:		// タイトル
+            break;
+        
+		case ModelTestScene::CameraMode::GamePlay:	// ゲームプレイ中
+            GamePlayCamera(elapsedTime);
+            break;
 
-	// 補間移動カメラの更新
-	m_moveCamera.Update(elapsedTime);
+		default:
+            break;
+    }
 
 	// デバッグカメラの更新
     m_debugCamera->Update(elapsedTime);
@@ -53,22 +56,16 @@ void ModelTestScene::Render(GameContext& gameContext)
     // DirectX3Dのデバイスコンテキストを取得する
     auto context = gameContext.deviceResources.GetD3DDeviceContext();
 
-	SimpleMath::Matrix world, view;
+	SimpleMath::Matrix world;
 
-	// デバッグカメラからビュー行列を取得する
-//    view = m_debugCamera->GetCameraMatrix();
-
-	// 固定カメラからビュー行列を取得する
-//    view = m_fixedCamera.GetViewMatrix();
-
-	// 補間移動カメラからビュー行列を取得する
-    view = m_moveCamera.GetViewMatrix();
+	// バネカメラからビュー行列を取得する
+    m_view = m_springCamera.GetViewMatrix();
 
     // グリッドフロアの描画
-	m_gridFloor->Render(context, view, m_projection);
+	m_gridFloor->Render(context, m_view, m_projection);
 
-	// モデルの描画
-    m_model->Draw(context, gameContext.commonStates, world, view, m_projection);
+	// プレイヤーの描画
+    m_player->Render();
 }
 
 // シーン切り替え時に呼び出される関数
@@ -97,8 +94,11 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
     EffectFactory fx(device);
     fx.SetDirectory(L"Resources/Models");	// <- ddsのフォルダ
 
-	// スザンヌの読み込み
-	m_model = Model::CreateFromCMO(device, L"Resources/Models/Monkey.cmo", fx);
+	// モデルの読み込み
+	m_model = Model::CreateFromCMO(device, L"Resources/Models/Player.cmo", fx);
+
+	// プレイヤーの作成
+    m_player = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
 }
 
 // プロジェクション行列を作成する関数
@@ -125,5 +125,24 @@ void ModelTestScene::OnWindowSizeChanged(GameContext& gameContext)
 {
     // プロジェクション行列を設定する
     m_projection = CreateProjectionMatrix(gameContext);
+}
+
+// ゲームプレイ用カメラ
+void ModelTestScene::GamePlayCamera(float elapsedTime)
+{
+	// プレイヤーの位置からのカメラの相対位置
+    SimpleMath::Vector3 cameraPosition(0.0f, 4.0f, 4.0f);
+
+	// 回転行列を作成
+    SimpleMath::Matrix rotY = SimpleMath::Matrix::CreateRotationY(m_player->GetFacingAngleRad());
+
+	// カメラの相対位置をプレイヤーの向いている角度で回転させる
+    SimpleMath::Vector3 v = SimpleMath::Vector3::Transform(cameraPosition, rotY);
+
+	// バネカメラのターゲットを設定
+    m_springCamera.SetTarget(m_player->GetPosition() + v, m_player->GetPosition(), 0.2f);
+
+	// バネカメラの更新
+    m_springCamera.Update(elapsedTime);
 }
 

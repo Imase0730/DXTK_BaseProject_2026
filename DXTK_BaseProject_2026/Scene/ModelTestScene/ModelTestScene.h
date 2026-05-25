@@ -17,6 +17,9 @@
 
 #include "Camera/FixedCamera.h"
 #include "Camera/MoveCamera.h"
+#include "Camera/SpringCamera.h"
+
+#include "Player.h"
 
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
 {
@@ -35,6 +38,9 @@ public:
 	void OnEnter(GameContext& gameContext) override;
 
 private:
+
+	// ビュー行列
+    DirectX::SimpleMath::Matrix m_view;
 
 	// プロジェクション行列
     DirectX::SimpleMath::Matrix m_projection;
@@ -59,5 +65,24 @@ private:
 	
 	// 補間移動カメラ
     Imase::MoveCamera m_moveCamera;
+
+	// バネカメラ
+    Imase::SpringCamera m_springCamera;
+
+	// プレイヤーへのユニークポインタ
+    std::unique_ptr<Player> m_player;
+
+	enum class CameraMode
+	{
+		Title,
+		GamePlay,
+	};
+
+	// カメラモード
+    CameraMode m_cameraMode = CameraMode::GamePlay;
+
+	// ゲームプレイ用カメラ
+    void GamePlayCamera(float elapsedTime);
+
 };
 
