@@ -79,10 +79,39 @@ private:
 	};
 
 	// カメラモード
-    CameraMode m_cameraMode = CameraMode::GamePlay;
+    CameraMode m_cameraMode = CameraMode::Title;
 
 	// ゲームプレイ用カメラ
-    void GamePlayCamera(float elapsedTime);
+    void GamePlayCamera(float elapsedTime); 
+	
+	// タイトル用カメラ
+    void TitleCamera(float elapsedTime);
+
+	// カメラのY軸に対する回転角度（タイトル用）
+    float m_titleAngleRad = 0.0f;
+
+	// タイトル用カメラの回転角度（１秒間あたりの回転角度）
+    static constexpr float TITLE_CAMERA_MOVE_ANGLE_DEG = 10.0f;
+
+	// モデルハンドル（矢印）
+    std::unique_ptr<DirectX::Model> m_arrowModel;
+
+	// ---- オイラー角テスト用 ----- //
+    float m_angleRad_X = 0.0f;
+    float m_angleRad_Y = 0.0f;
+    float m_angleRad_Z = 0.0f;
+
+	// １秒間あたりの回転角度
+    static constexpr float ROTATE_ANGLE_DEG = 90.0f;
+
+	// クォータニオン
+    DirectX::SimpleMath::Quaternion m_quaternion;
+
+	// モデルハンドル（ターゲット）
+    std::unique_ptr<DirectX::Model> m_targetModel;
+
+	// ターゲットの位置
+    DirectX::SimpleMath::Vector3 m_targetPosition = { 0.0f, 0.0f, -2.0f };
 
 };
 
