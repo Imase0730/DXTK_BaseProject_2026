@@ -188,6 +188,7 @@
     <ClInclude Include="DirectXTK_Utilities\DebugDraw.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameContext.h" />
+    <ClInclude Include="ImaseLib\CollisionRenderer.h" />
     <ClInclude Include="ImaseLib\DebugCamera.h" />
     <ClInclude Include="ImaseLib\DebugRenderer.h" />
     <ClInclude Include="ImaseLib\GridFloor.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="Common\DeviceResources.cpp" />
     <ClCompile Include="DirectXTK_Utilities\DebugDraw.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="ImaseLib\CollisionRenderer.cpp" />
     <ClCompile Include="ImaseLib\DebugCamera.cpp" />
     <ClCompile Include="ImaseLib\DebugRenderer.cpp" />
     <ClCompile Include="ImaseLib\GridFloor.cpp" />

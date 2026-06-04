@@ -21,6 +21,8 @@
 
 #include "Player.h"
 
+#include "ImaseLib/CollisionRenderer.h"
+
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
 {
 public:
@@ -112,6 +114,21 @@ private:
 
 	// ターゲットの位置
     DirectX::SimpleMath::Vector3 m_targetPosition = { 0.0f, 0.0f, -2.0f };
+
+	// コリジョン情報表示オブジェクト
+	std::unique_ptr<Imase::CollisionRenderer> m_collisionRenderer;
+
+	// プレイヤーへのユニークポインタ
+    std::unique_ptr<Player> m_player1;
+    std::unique_ptr<Player> m_player2;
+
+	enum class ControlPlayer
+	{
+		P1, P2
+	};
+
+	// 操作対象のプレイヤー
+	ControlPlayer m_control = ControlPlayer::P1;
 
 };
 

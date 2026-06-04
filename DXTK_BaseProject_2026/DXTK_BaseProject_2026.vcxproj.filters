@@ -118,6 +118,9 @@
     <ClInclude Include="Scene\ModelTestScene\Player.h">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClInclude>
+    <ClInclude Include="ImaseLib\CollisionRenderer.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -185,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="Scene\ModelTestScene\Player.cpp">
       <Filter>Scene\ModelsTestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaseLib\CollisionRenderer.cpp">
+      <Filter>ImaseLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

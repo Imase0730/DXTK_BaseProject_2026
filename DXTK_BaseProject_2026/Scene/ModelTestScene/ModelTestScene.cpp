@@ -11,6 +11,17 @@
 
 using namespace DirectX;
 
+// 球と球の衝突判定関数
+bool HitCheck_Sphere2Sphere(const BoundingSphere& sphere1, const BoundingSphere& sphere2)
+{
+    // 2つの球の中心の間の距離の平方を計算
+    SimpleMath::Vector3 d = SimpleMath::Vector3(sphere1.Center) - SimpleMath::Vector3(sphere2.Center);
+    float distSq = d.Dot(d);
+    // 平方した距離が平方した半径の合計よりも小さい場合に球は交差している
+    float radiusSum = sphere1.Radius + sphere2.Radius;
+    return distSq <= radiusSum * radiusSum;
+}
+
 // コンストラクタ
 ModelTestScene::ModelTestScene()
     : m_fixedCamera(SimpleMath::Vector3(0.0f, 2.0f, 5.0f), SimpleMath::Vector3(0.0f, 0.0f, 0.0f))
@@ -27,111 +38,37 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
 
-	auto kb = Keyboard::Get().GetState();
-
-    // ----- ターゲットの移動 ----- //
-    if (kb.W)
+    // スペースキーで操作対象を切り替える
+    if (gameContext.keyboardTracker.pressed.Space)
     {
-        m_targetPosition.z -= 0.05f;
-    }
-    if (kb.S)
-    {
-        m_targetPosition.z += 0.05f;
-    }
-
-    if (kb.A)
-    {
-        m_targetPosition.x -= 0.05f;
-    }
-    if (kb.D)
-    {
-        m_targetPosition.x += 0.05f;
+        if (m_control == ControlPlayer::P1)
+        {
+            m_control = ControlPlayer::P2;
+        }
+        else
+        {
+            m_control = ControlPlayer::P1;
+        }
     }
 
-    if (kb.Q)
+	// プレイヤーの更新
+    if (m_control == ControlPlayer::P1)
     {
-        m_targetPosition.y += 0.05f;
+        m_player1->Update(elapsedTime);
     }
-    if (kb.Z)
+    else
     {
-        m_targetPosition.y -= 0.05f;
+        m_player2->Update(elapsedTime);
     }
-
-	// 回転角度を算出する
-	float rotateRangleRad = XMConvertToRadians(ROTATE_ANGLE_DEG) * elapsedTime;
-
-	// 左キーでZ軸＋回転
-    if (!kb.LeftShift && kb.Left)
-    {
-        m_angleRad_Z += rotateRangleRad;
-    }
-    // 右キーでZ軸－回転
-    if (!kb.LeftShift && kb.Right)
-    {
-        m_angleRad_Z -= rotateRangleRad;
-    }
-
-	// 上キーでX軸＋回転
-    if (kb.Up)
-    {
-        m_angleRad_X += rotateRangleRad;
-    }
-    // 下キーでX軸－回転
-    if (kb.Down)
-    {
-        m_angleRad_X -= rotateRangleRad;
-    }
-
-    // 左シフトキー＋左キーでY軸＋回転
-    if (kb.LeftShift && kb.Left)
-    {
-        m_angleRad_Y += rotateRangleRad;
-    }
-    // 左シフトキー＋右キーでY軸－回転
-    if (kb.LeftShift && kb.Right)
-    {
-        m_angleRad_Y -= rotateRangleRad;
-    }
-
-    // -------------------------------------------------------------------------- //
-    // 各軸の回転角からクォータニオンを作成する
-    //m_quaternion = SimpleMath::Quaternion::CreateFromYawPitchRoll(m_angleRad_Y, m_angleRad_X, m_angleRad_Z);
-    // -------------------------------------------------------------------------- //
-
-    // -------------------------------------------------------------------------- //
-    //// X軸回転
-    //SimpleMath::Quaternion rotX =
-    //    SimpleMath::Quaternion::CreateFromAxisAngle(SimpleMath::Vector3::UnitX, m_angleRad_X);
-    //// Y軸回転
-    //SimpleMath::Quaternion rotY =
-    //    SimpleMath::Quaternion::CreateFromAxisAngle(SimpleMath::Vector3::UnitY, m_angleRad_Y);
-    //// Z軸回転
-    //SimpleMath::Quaternion rotZ =
-    //    SimpleMath::Quaternion::CreateFromAxisAngle(SimpleMath::Vector3::UnitZ, m_angleRad_Z);
-    //// クォータニオンを結合する
-    //m_quaternion = rotZ * rotX * rotY;
-    //  -------------------------------------------------------------------------- //
-
-    //  -------------------------------------------------------------------------- //
-    // ターゲット方向へ回転させるクォータニオンを作成する
-    //m_quaternion = SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, m_targetPosition);
-    //  -------------------------------------------------------------------------- //
-
-    //  -------------------------------------------------------------------------- //
-    //// ターゲット方向へ回転させるクォータニオンを作成する（ねじれなし）
-    //SimpleMath::Matrix m = 
-    //    SimpleMath::Matrix::CreateWorld(SimpleMath::Vector3::Zero, m_targetPosition, SimpleMath::Vector3::Up);
-    //m_quaternion = SimpleMath::Quaternion::CreateFromRotationMatrix(m);
-    //   -------------------------------------------------------------------------- //
-
-    // ターゲット方向へ回転させるクォータニオンを作成する
-    SimpleMath::Quaternion q =
-        SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, m_targetPosition);
-    // 球面線形補間を行う
-    m_quaternion = SimpleMath::Quaternion::Lerp(m_quaternion, q, 0.1f);
 
     // デバッグカメラの更新
     m_debugCamera->Update(elapsedTime);
+
+    // P1とP2の衝突判定
+    if (HitCheck_Sphere2Sphere(m_player1->GetBoundingSphere(), m_player2->GetBoundingSphere()))
+    {
+        debugRenderer.DrawText({ 0.0f, 50.0f }, L"Hit!");
+    }
 
 	debugRenderer.DrawText({ 0.0f, 0.0f }, L"ModelTestScene");
 }
@@ -147,25 +84,23 @@ void ModelTestScene::Render(GameContext& gameContext)
 	// デバッグカメラからビュー行列を取得する
     m_view = m_debugCamera->GetCameraMatrix();
 
-    // グリッドフロアの描画
+	// グリッドフロアの描画
 	m_gridFloor->Render(context, m_view, m_projection);
 
-	// ワールド行列を作成する
-    //world = SimpleMath::Matrix::CreateRotationZ(m_angleRad_Z)
-    //      * SimpleMath::Matrix::CreateRotationX(m_angleRad_X)
-    //      * SimpleMath::Matrix::CreateRotationY(m_angleRad_Y);
+	// ----- P1 ----- //
+    // プレイヤーの描画
+    m_player1->Render();
+    // プレイヤーのコリジョン情報の表示
+    m_collisionRenderer->AddBoundingVolume(m_player1->GetBoundingSphere());
 
-    // クォータニオンから回転行列を作成する
-    world = SimpleMath::Matrix::CreateFromQuaternion(m_quaternion);
+	// ----- P2 ----- //
+    // プレイヤーの描画
+    m_player2->Render();
+    // プレイヤーのコリジョン情報の表示
+    m_collisionRenderer->AddBoundingVolume(m_player2->GetBoundingSphere());
 
-	// 矢印の描画
-    m_arrowModel->Draw(context, gameContext.commonStates, world, m_view, m_projection);
-
-    // ワールド行列を作成する
-    world = SimpleMath::Matrix::CreateTranslation(m_targetPosition);
-
-    // ターゲットの描画
-    m_targetModel->Draw(context, gameContext.commonStates, world, m_view, m_projection);
+    // コリジョン情報の描画
+    m_collisionRenderer->DrawCollision(context, gameContext.commonStates, m_view, m_projection);
 }
 
 // シーン切り替え時に呼び出される関数
@@ -205,6 +140,14 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
 
     // モデルの読み込み（ターゲット）
     m_targetModel = Model::CreateFromCMO(device, L"Resources/Models/Target.cmo", fx);
+
+	// コリジョン情報表示オブジェクトの作成
+    m_collisionRenderer = std::make_unique<Imase::CollisionRenderer>(device, context);
+
+	// プレイヤーの作成
+    m_player1 = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
+    m_player2 = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
+
 }
 
 // プロジェクション行列を作成する関数

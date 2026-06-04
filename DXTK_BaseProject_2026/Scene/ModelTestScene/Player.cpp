@@ -49,6 +49,9 @@ void Player::Update(float elapsedTime)
     {
         m_position -= v * MOVE_SPEED * elapsedTime;
     }
+
+    // コリジョン情報を更新する
+    m_boundingSphere.Center = m_position;
 }
 
 // 描画

@@ -26,6 +26,12 @@ public:
     // 向いている角度を取得する関数
     float GetFacingAngleRad() const;
 
+    // 境界球を取得する関数
+    const DirectX::BoundingSphere& GetBoundingSphere() const
+    {
+        return m_boundingSphere;
+    }
+
 private:
 
     // 回転の速さ（１秒間あたりの角度）
@@ -51,5 +57,8 @@ private:
 
     // 向いている角度（ラジアン）
     float m_facingAngleRad = 0.0f;
+
+    // 境界球（衝突判定用）
+    DirectX::BoundingSphere m_boundingSphere = { DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f };
 
 };
