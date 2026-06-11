@@ -11,6 +11,36 @@
 
 using namespace DirectX;
 
+// 球とAABBの衝突判定関数
+bool HitCheck_Sphere2AABB(const BoundingSphere& sphere, const BoundingBox& box)
+{
+    // AABBの『各軸の最大値、最小値』を求める
+    SimpleMath::Vector3 min = SimpleMath::Vector3(box.Center) - SimpleMath::Vector3(box.Extents);
+    SimpleMath::Vector3 max = SimpleMath::Vector3(box.Center) + SimpleMath::Vector3(box.Extents);
+
+    // 各軸の『球の中心とAABBとの距離』を求める
+    min = min - SimpleMath::Vector3::Min(sphere.Center, min);
+    max = SimpleMath::Vector3::Max(sphere.Center, max) - max;
+
+    // 『球の中心とAABBの距離の２乗』を内積を使ってもとめる
+    float distSq = min.Dot(min) + max.Dot(max);
+
+    // 『球の中心とAABBの距離の２乗』と『球の半径の２乗』を比較する
+    return distSq <= sphere.Radius * sphere.Radius;
+}
+
+// AABBとAABBの衝突判定関数
+bool HitCheck_AABB2AABB(const BoundingBox& box1, const BoundingBox& box2)
+{
+    if (fabsf(box1.Center.x - box2.Center.x) > (box1.Extents.x + box2.Extents.x))
+        return false;
+    if (fabsf(box1.Center.y - box2.Center.y) > (box1.Extents.y + box2.Extents.y))
+        return false;
+    if (fabsf(box1.Center.z - box2.Center.z) > (box1.Extents.z + box2.Extents.z))
+        return false;
+    return true;
+}
+
 // 球と球の衝突判定関数
 bool HitCheck_Sphere2Sphere(const BoundingSphere& sphere1, const BoundingSphere& sphere2)
 {
@@ -64,10 +94,28 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
     // デバッグカメラの更新
     m_debugCamera->Update(elapsedTime);
 
-    // P1とP2の衝突判定
-    if (HitCheck_Sphere2Sphere(m_player1->GetBoundingSphere(), m_player2->GetBoundingSphere()))
+    // P1とP2の衝突判定（球と球）
+    //if (HitCheck_Sphere2Sphere(m_player1->GetBoundingSphere(), m_player2->GetBoundingSphere()))
+    //{
+    //    debugRenderer.DrawText({0.0f, 50.0f}, L"Hit!");
+    //}
+
+    // P1とP2の衝突判定（AABBとAABB）
+    //if (HitCheck_AABB2AABB(m_player1->GetBoundingBox(), m_player2->GetBoundingBox()))
+    //{
+    //    debugRenderer.DrawText({0.0f, 50.0f}, L"Hit!");
+    //}
+
+    // P1とP2の衝突判定（球とAABB）
+    //if (HitCheck_Sphere2AABB(m_player1->GetBoundingSphere(), m_player2->GetBoundingBox()))
+    //{
+    //    debugRenderer.DrawText({0.0f, 50.0f}, L"Hit!");
+    //}
+
+    // P1とP2の衝突判定（モデルデータ同士）
+    if (m_player1->GetModelCollision()->Intersects(m_player2->GetModelCollision()))
     {
-        debugRenderer.DrawText({ 0.0f, 50.0f }, L"Hit!");
+        debugRenderer.DrawText({0.0f, 50.0f}, L"Hit!");
     }
 
 	debugRenderer.DrawText({ 0.0f, 0.0f }, L"ModelTestScene");
@@ -91,13 +139,13 @@ void ModelTestScene::Render(GameContext& gameContext)
     // プレイヤーの描画
     m_player1->Render();
     // プレイヤーのコリジョン情報の表示
-    m_collisionRenderer->AddBoundingVolume(m_player1->GetBoundingSphere());
+    m_player1->GetModelCollision()->AddCollisionRenderer(m_collisionRenderer.get());
 
 	// ----- P2 ----- //
     // プレイヤーの描画
     m_player2->Render();
     // プレイヤーのコリジョン情報の表示
-    m_collisionRenderer->AddBoundingVolume(m_player2->GetBoundingSphere());
+    m_player2->GetModelCollision()->AddCollisionRenderer(m_collisionRenderer.get());
 
     // コリジョン情報の描画
     m_collisionRenderer->DrawCollision(context, gameContext.commonStates, m_view, m_projection);
@@ -130,7 +178,7 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
     fx.SetDirectory(L"Resources/Models");	// <- ddsのフォルダ
 
 	// モデルの読み込み
-	m_model = Model::CreateFromCMO(device, L"Resources/Models/Player.cmo", fx);
+	m_model = Model::CreateFromCMO(device, L"Resources/Models/Pacman.cmo", fx);
 
 	// プレイヤーの作成
     m_player = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
@@ -147,7 +195,6 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
 	// プレイヤーの作成
     m_player1 = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
     m_player2 = std::make_unique<Player>(gameContext, m_view, m_projection, m_model.get());
-
 }
 
 // プロジェクション行列を作成する関数

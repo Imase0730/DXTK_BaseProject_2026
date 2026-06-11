@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "GameContext.h"
+#include "ImaseLib/ModelCollision.h"
 
 class Player
 {
@@ -32,6 +33,18 @@ public:
         return m_boundingSphere;
     }
 
+    // AABBを取得する関数
+    const DirectX::BoundingBox& GetBoundingBox() const
+    {
+        return m_boundingBox;
+    }
+
+    // モデルデータの衝突判定を取得する関数
+    const const Imase::ModelCollision* GetModelCollision() const
+    {
+        return m_modelCollision.get();
+    }
+
 private:
 
     // 回転の速さ（１秒間あたりの角度）
@@ -58,7 +71,18 @@ private:
     // 向いている角度（ラジアン）
     float m_facingAngleRad = 0.0f;
 
-    // 境界球（衝突判定用）
-    DirectX::BoundingSphere m_boundingSphere = { DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f };
+    // 回転クォータニオン
+    DirectX::SimpleMath::Quaternion m_rotate;
 
+    // 境界球（衝突判定用）
+    DirectX::BoundingSphere m_boundingSphere = {DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f};
+
+    // AABB（衝突判定用）
+    DirectX::BoundingBox m_boundingBox = 
+                { DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f)   // 中心,
+                , DirectX::SimpleMath::Vector3(1.0f, 0.5f, 1.0f)   // 中心から各軸の辺までの距離
+                };
+
+   	// モデルデータの衝突判定
+    std::unique_ptr<Imase::ModelCollision> m_modelCollision;
 };

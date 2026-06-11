@@ -15,6 +15,9 @@ Player::Player(
     , m_projection(projection)
     , m_pModel(pModel)
 {
+    // モデルデータの衝突判定の作成
+    m_modelCollision = Imase::ModelCollisionFactory::CreateCollision(
+        pModel, Imase::ModelCollision::CollisionType::OBB);
 }
 
 // 更新
@@ -33,11 +36,11 @@ void Player::Update(float elapsedTime)
         m_facingAngleRad -= XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime;
     }
 
-    // 回転行列を作成する
-    SimpleMath::Matrix rotY = SimpleMath::Matrix::CreateRotationY(m_facingAngleRad);
+    // 回転クォータニオンを作成する
+    m_rotate = SimpleMath::Quaternion::CreateFromYawPitchRoll(m_facingAngleRad, 0.0f, 0.0f);
 
-    // Forward(0,0,-1)を回転行列で回転させる
-    SimpleMath::Vector3 v = SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, rotY);
+    // Forward(0,0,-1)を回転クォータニオンで回転させる
+    SimpleMath::Vector3 v = SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, m_rotate);
 
     // 上キーで前進
     if (kb.Up)
@@ -52,6 +55,8 @@ void Player::Update(float elapsedTime)
 
     // コリジョン情報を更新する
     m_boundingSphere.Center = m_position;
+    m_boundingBox.Center = m_position;
+    m_modelCollision->UpdateBoundingInfo(m_position, m_rotate);
 }
 
 // 描画

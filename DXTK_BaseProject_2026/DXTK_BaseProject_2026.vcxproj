@@ -192,6 +192,7 @@
     <ClInclude Include="ImaseLib\DebugCamera.h" />
     <ClInclude Include="ImaseLib\DebugRenderer.h" />
     <ClInclude Include="ImaseLib\GridFloor.h" />
+    <ClInclude Include="ImaseLib\ModelCollision.h" />
     <ClInclude Include="ImaseLib\SceneManager.h" />
     <ClInclude Include="ImaseLib\Task.h" />
     <ClInclude Include="ImaseLib\TaskSystem.h" />
@@ -222,6 +223,7 @@
     <ClCompile Include="ImaseLib\DebugCamera.cpp" />
     <ClCompile Include="ImaseLib\DebugRenderer.cpp" />
     <ClCompile Include="ImaseLib\GridFloor.cpp" />
+    <ClCompile Include="ImaseLib\ModelCollision.cpp" />
     <ClCompile Include="ImaseLib\Task.cpp" />
     <ClCompile Include="ImaseLib\TaskSystem.cpp" />
     <ClCompile Include="Main.cpp" />
