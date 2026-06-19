@@ -29,5 +29,20 @@
     <MeshContentTask Include="Models\Pacman.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+    <MeshContentTask Include="Models\Floor.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Tank.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\TankBarrel.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\TankBody.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\TankHead.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>

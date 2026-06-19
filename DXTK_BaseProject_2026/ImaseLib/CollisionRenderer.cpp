@@ -88,11 +88,11 @@ CollisionRenderer::CollisionRenderer(
 	);
 
 	// プリミティブバッチの作成（メッシュ用）
-	m_meshBatch = std::make_unique<PrimitiveBatch<VertexPosition>>(context);
+	m_meshBatch = std::make_unique<PrimitiveBatch<VertexPositionNormal>>(context);
 
 	// 入力レイアウトの作成（メッシュ用）
 	DX::ThrowIfFailed(
-		CreateInputLayoutFromEffect<VertexPosition>(device, m_meshEffect.get(),
+		CreateInputLayoutFromEffect<VertexPositionNormal>(device, m_meshEffect.get(),
 			m_meshInputLayout.ReleaseAndGetAddressOf())
 	);
 

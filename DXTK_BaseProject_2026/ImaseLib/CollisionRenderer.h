@@ -75,14 +75,14 @@ namespace Imase
 		// メッシュの情報
 		struct Mesh
 		{
-			const std::vector<DirectX::VertexPosition>& vertexes;	// 頂点バッファ
+			const std::vector<DirectX::VertexPositionNormal>& vertexes;	// 頂点バッファ
 			const std::vector<uint16_t>& indexes;			// インデックスバッファ
 			DirectX::SimpleMath::Vector3 position;			// 移動
 			DirectX::SimpleMath::Quaternion rotate;			// 回転
 			DirectX::SimpleMath::Color lineColor;			// 色（ライン用）
 
 			constexpr Mesh(
-				const std::vector<DirectX::VertexPosition>& vertexes,
+				const std::vector<DirectX::VertexPositionNormal>& vertexes,
 				const std::vector<uint16_t>& indexes,
 				const DirectX::SimpleMath::Vector3& position,
 				const DirectX::SimpleMath::Quaternion& rotate,
@@ -135,7 +135,7 @@ namespace Imase
 		Microsoft::WRL::ComPtr<ID3D11InputLayout> m_meshInputLayout;
 
 		// プリミティブバッチ（メッシュ用）
-		std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPosition>> m_meshBatch;
+		std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionNormal>> m_meshBatch;
 
 		// インスタンス用頂点バッファ
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_instancedVB;
@@ -218,7 +218,7 @@ namespace Imase
 
 		// メッシュのコリジョンを登録する関数
 		void AddBoundingVolume(
-			const std::vector<DirectX::VertexPosition>& vertexes,
+			const std::vector<DirectX::VertexPositionNormal>& vertexes,
 			const std::vector<uint16_t>& indexes,
 			DirectX::SimpleMath::Vector3 position,
 			DirectX::SimpleMath::Quaternion rotate,

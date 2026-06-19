@@ -188,11 +188,13 @@
     <ClInclude Include="DirectXTK_Utilities\DebugDraw.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameContext.h" />
+    <ClInclude Include="ImaseLib\Collision.h" />
     <ClInclude Include="ImaseLib\CollisionRenderer.h" />
     <ClInclude Include="ImaseLib\DebugCamera.h" />
     <ClInclude Include="ImaseLib\DebugRenderer.h" />
     <ClInclude Include="ImaseLib\GridFloor.h" />
     <ClInclude Include="ImaseLib\ModelCollision.h" />
+    <ClInclude Include="ImaseLib\ObjCollision.h" />
     <ClInclude Include="ImaseLib\SceneManager.h" />
     <ClInclude Include="ImaseLib\Task.h" />
     <ClInclude Include="ImaseLib\TaskSystem.h" />
@@ -200,7 +202,7 @@
     <ClInclude Include="Common\StepTimer.h" />
     <ClInclude Include="Scene\BaseScene\BaseScene.h" />
     <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h" />
-    <ClInclude Include="Scene\ModelTestScene\Player.h" />
+    <ClInclude Include="Scene\ModelTestScene\Tank.h" />
     <ClInclude Include="Scene\SceneId.h" />
     <ClInclude Include="Scene\ShootingGameScene\CollisionManager.h" />
     <ClInclude Include="Scene\ShootingGameScene\ShootingGameScene.h" />
@@ -224,6 +226,7 @@
     <ClCompile Include="ImaseLib\DebugRenderer.cpp" />
     <ClCompile Include="ImaseLib\GridFloor.cpp" />
     <ClCompile Include="ImaseLib\ModelCollision.cpp" />
+    <ClCompile Include="ImaseLib\ObjCollision.cpp" />
     <ClCompile Include="ImaseLib\Task.cpp" />
     <ClCompile Include="ImaseLib\TaskSystem.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -235,7 +238,7 @@
     </ClCompile>
     <ClCompile Include="Scene\BaseScene\BaseScene.cpp" />
     <ClCompile Include="Scene\ModelTestScene\ModelTestScene.cpp" />
-    <ClCompile Include="Scene\ModelTestScene\Player.cpp" />
+    <ClCompile Include="Scene\ModelTestScene\Tank.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\CollisionManager.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\ShootingGameScene.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\Task\BulletTask.cpp" />

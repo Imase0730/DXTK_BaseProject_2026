@@ -1,14 +1,26 @@
 ﻿#pragma once
 
 #include "GameContext.h"
-#include "ImaseLib/ModelCollision.h"
 
-class Player
+class Tank
 {
 public:
 
+    // パーツ
+    enum class Parts
+    {
+        BODY,       // 車体
+        HEAD,       // 砲塔
+        BARREL,     // 砲身
+
+        PARTS_CNT
+    };
+
+    // パーツ数
+    static constexpr int PARTS_CNT = static_cast<int>(Parts::PARTS_CNT);
+
 	// コンストラクタ
-    Player(
+    Tank(
         const GameContext& gameContext,
         const DirectX::SimpleMath::Matrix& view,
         const DirectX::SimpleMath::Matrix& projection,
@@ -24,25 +36,16 @@ public:
     // 位置を取得する関数
     DirectX::SimpleMath::Vector3 GetPosition() const;
 
-    // 向いている角度を取得する関数
-    float GetFacingAngleRad() const;
-
-    // 境界球を取得する関数
-    const DirectX::BoundingSphere& GetBoundingSphere() const
+    // 戦車のY座標を設定する関数
+    void SetPositionY(float y)
     {
-        return m_boundingSphere;
+        m_position.y = y;
     }
 
-    // AABBを取得する関数
-    const DirectX::BoundingBox& GetBoundingBox() const
+    // 戦車の傾きを設定する関数
+    void SetTilt(DirectX::SimpleMath::Quaternion tilt)
     {
-        return m_boundingBox;
-    }
-
-    // モデルデータの衝突判定を取得する関数
-    const const Imase::ModelCollision* GetModelCollision() const
-    {
-        return m_modelCollision.get();
+        m_rotate *= tilt;
     }
 
 private:
@@ -74,15 +77,4 @@ private:
     // 回転クォータニオン
     DirectX::SimpleMath::Quaternion m_rotate;
 
-    // 境界球（衝突判定用）
-    DirectX::BoundingSphere m_boundingSphere = {DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f), 1.0f};
-
-    // AABB（衝突判定用）
-    DirectX::BoundingBox m_boundingBox = 
-                { DirectX::SimpleMath::Vector3(0.0f, 0.0f, 0.0f)   // 中心,
-                , DirectX::SimpleMath::Vector3(1.0f, 0.5f, 1.0f)   // 中心から各軸の辺までの距離
-                };
-
-   	// モデルデータの衝突判定
-    std::unique_ptr<Imase::ModelCollision> m_modelCollision;
 };

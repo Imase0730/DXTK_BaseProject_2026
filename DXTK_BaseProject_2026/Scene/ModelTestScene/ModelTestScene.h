@@ -15,13 +15,10 @@
 #include "ImaseLib/DebugCamera.h"
 #include "Imaselib/GridFloor.h"
 
-#include "Camera/FixedCamera.h"
-#include "Camera/MoveCamera.h"
-#include "Camera/SpringCamera.h"
-
-#include "Player.h"
-
 #include "ImaseLib/CollisionRenderer.h"
+#include "ImaseLib/ObjCollision.h"
+
+#include "Tank.h"
 
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
 {
@@ -62,73 +59,23 @@ private:
 	// モデルハンドル
     std::unique_ptr<DirectX::Model> m_model;
 
-	// 固定カメラ
-    Imase::FixedCamera m_fixedCamera;
-	
-	// 補間移動カメラ
-    Imase::MoveCamera m_moveCamera;
-
-	// バネカメラ
-    Imase::SpringCamera m_springCamera;
-
-	// プレイヤーへのユニークポインタ
-    std::unique_ptr<Player> m_player;
-
-	enum class CameraMode
-	{
-		Title,
-		GamePlay,
-	};
-
-	// カメラモード
-    CameraMode m_cameraMode = CameraMode::Title;
-
-	// ゲームプレイ用カメラ
-    void GamePlayCamera(float elapsedTime); 
-	
-	// タイトル用カメラ
-    void TitleCamera(float elapsedTime);
-
-	// カメラのY軸に対する回転角度（タイトル用）
-    float m_titleAngleRad = 0.0f;
-
-	// タイトル用カメラの回転角度（１秒間あたりの回転角度）
-    static constexpr float TITLE_CAMERA_MOVE_ANGLE_DEG = 10.0f;
-
-	// モデルハンドル（矢印）
-    std::unique_ptr<DirectX::Model> m_arrowModel;
-
-	// ---- オイラー角テスト用 ----- //
-    float m_angleRad_X = 0.0f;
-    float m_angleRad_Y = 0.0f;
-    float m_angleRad_Z = 0.0f;
-
-	// １秒間あたりの回転角度
-    static constexpr float ROTATE_ANGLE_DEG = 90.0f;
-
-	// クォータニオン
-    DirectX::SimpleMath::Quaternion m_quaternion;
-
-	// モデルハンドル（ターゲット）
-    std::unique_ptr<DirectX::Model> m_targetModel;
-
-	// ターゲットの位置
-    DirectX::SimpleMath::Vector3 m_targetPosition = { 0.0f, 0.0f, -2.0f };
-
 	// コリジョン情報表示オブジェクト
 	std::unique_ptr<Imase::CollisionRenderer> m_collisionRenderer;
 
-	// プレイヤーへのユニークポインタ
-    std::unique_ptr<Player> m_player1;
-    std::unique_ptr<Player> m_player2;
+	// モデルハンドル（床）
+    std::unique_ptr<DirectX::Model> m_modelFloor;
 
-	enum class ControlPlayer
-	{
-		P1, P2
-	};
+	// モデルデータの衝突判定
+	std::unique_ptr<Imase::ObjCollision> m_objCollision;
 
-	// 操作対象のプレイヤー
-	ControlPlayer m_control = ControlPlayer::P1;
+	// モデルハンドル（戦車）
+    std::unique_ptr<DirectX::Model> m_modelTank;
+
+	// 戦車へのユニークポインタ
+    std::unique_ptr<Tank> m_tank;
+
+	// 線分データ
+	DirectX::SimpleMath::Vector3 m_line[2];
 
 };
 

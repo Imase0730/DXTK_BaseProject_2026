@@ -1,10 +1,10 @@
 ﻿#include "pch.h"
-#include "Player.h"
+#include "Tank.h"
 
 using namespace DirectX;
 
 // コンストラクタ
-Player::Player(
+Tank::Tank(
     const GameContext& gameContext,
     const DirectX::SimpleMath::Matrix& view,
     const DirectX::SimpleMath::Matrix& projection,
@@ -15,13 +15,10 @@ Player::Player(
     , m_projection(projection)
     , m_pModel(pModel)
 {
-    // モデルデータの衝突判定の作成
-    m_modelCollision = Imase::ModelCollisionFactory::CreateCollision(
-        pModel, Imase::ModelCollision::CollisionType::OBB);
 }
 
 // 更新
-void Player::Update(float elapsedTime)
+void Tank::Update(float elapsedTime)
 {
     auto kb = Keyboard::Get().GetState();
 
@@ -52,20 +49,15 @@ void Player::Update(float elapsedTime)
     {
         m_position -= v * MOVE_SPEED * elapsedTime;
     }
-
-    // コリジョン情報を更新する
-    m_boundingSphere.Center = m_position;
-    m_boundingBox.Center = m_position;
-    m_modelCollision->UpdateBoundingInfo(m_position, m_rotate);
 }
 
 // 描画
-void Player::Render()
+void Tank::Render()
 {
     SimpleMath::Matrix world;
 
     // ワールド行列を作成する
-    world = SimpleMath::Matrix::CreateRotationY(m_facingAngleRad)
+    world = SimpleMath::Matrix::CreateFromQuaternion(m_rotate)
           * SimpleMath::Matrix::CreateTranslation(m_position);
 
     // モデルの描画
@@ -79,13 +71,7 @@ void Player::Render()
 }
 
 // 位置を取得する関数
-DirectX::SimpleMath::Vector3 Player::GetPosition() const
+DirectX::SimpleMath::Vector3 Tank::GetPosition() const
 {
     return m_position;
-}
-
-// 向いている角度を取得する関数
-float Player::GetFacingAngleRad() const
-{
-    return m_facingAngleRad;
 }
