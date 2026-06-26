@@ -44,5 +44,23 @@
     <MeshContentTask Include="Models\TankHead.obj">
       <Filter>Models</Filter>
     </MeshContentTask>
+    <MeshContentTask Include="Models\Arm_L.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Arm_R.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Body.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Head.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Leg.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="Models\Missile.obj">
+      <Filter>Models</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>

@@ -24,29 +24,29 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
 
-    // 戦車の更新
-    m_tank->Update(elapsedTime);
+    // ロボットの更新
+    m_robot->Update(elapsedTime);
 
-    // 戦車の位置に線分を表示する
-    m_line[0].x = m_tank->GetPosition().x;
-    m_line[1].x = m_tank->GetPosition().x;
+    // ロボットの位置に線分を表示する
+    m_line[0].x = m_robot->GetPosition().x;
+    m_line[1].x = m_robot->GetPosition().x;
     m_line[0].y = 2.0f;
     m_line[1].y = -2.0f;
-    m_line[0].z = m_tank->GetPosition().z;
-    m_line[1].z = m_tank->GetPosition().z;
+    m_line[0].z = m_robot->GetPosition().z;
+    m_line[1].z = m_robot->GetPosition().z;
 
     // 床のモデルと線分の交差判定
     SimpleMath::Vector3 hitPosition;
     SimpleMath::Vector3 normal;
     if (m_objCollision->IntersectLineSegment(m_line[0], m_line[1], &hitPosition, &normal))
     {
-        // 戦車のY座標を設定する
-        m_tank->SetPositionY(hitPosition.y);
+        // ロボットのY座標を設定する
+        m_robot->SetPositionY(hitPosition.y);
 
         // 床の法線方向へ傾けるクォータニオンを作成する
         SimpleMath::Quaternion q = SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Up, normal);
-        // 戦車を傾ける
-        m_tank->SetTilt(q);
+        // ロボットを傾ける
+        m_robot->SetTilt(q);
 
         debugRenderer.DrawText({ 0.0f, 50.0f }, L"Hit!");
     }
@@ -74,7 +74,10 @@ void ModelTestScene::Render(GameContext& gameContext)
     // m_modelFloor->Draw(context, gameContext.commonStates, world, m_view, m_projection);
 
     // 戦車の描画
-    m_tank->Render();
+    //m_tank->Render();
+
+    // ロボットの描画
+    m_robot->Render();
 
     // 衝突判定用のモデルデータ（床）の表示
     m_objCollision->AddCollisionRenderer(m_collisionRenderer.get());
@@ -120,12 +123,33 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
     // モデルデータから衝突判定用データを作成
     m_objCollision = std::make_unique<Imase::ObjCollision>("Resources/Models/Floor.obj");
 
-    // モデルの読み込み（戦車）
-    m_modelTank = Model::CreateFromCMO(device, L"Resources/Models/Tank.cmo", fx);
+    // 各パーツのモデルの読み込み（戦車）
+    m_modelTanks[static_cast<int>(Tank::Parts::BODY)] =
+        Model::CreateFromCMO(device, L"Resources/Models/TankBody.cmo", fx);
+    m_modelTanks[static_cast<int>(Tank::Parts::HEAD)] =
+        Model::CreateFromCMO(device, L"Resources/Models/TankHead.cmo", fx);
+    m_modelTanks[static_cast<int>(Tank::Parts::BARREL)] =
+        Model::CreateFromCMO(device, L"Resources/Models/TankBarrel.cmo", fx);
 
     // 戦車の作成
-    m_tank = std::make_unique<Tank>(gameContext, m_view, m_projection, m_modelTank.get());
+    m_tank = std::make_unique<Tank>(gameContext, m_view, m_projection, m_modelTanks);
 
+    // 各パーツのモデルの読み込み（ロボット）
+    m_modelRobots[static_cast<int>(Robot::Parts::LEG)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Leg.cmo", fx);
+    m_modelRobots[static_cast<int>(Robot::Parts::BODY)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Body.cmo", fx);
+    m_modelRobots[static_cast<int>(Robot::Parts::HEAD)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Head.cmo", fx);
+    m_modelRobots[static_cast<int>(Robot::Parts::ARM_R)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Arm_R.cmo", fx);
+    m_modelRobots[static_cast<int>(Robot::Parts::ARM_L)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Arm_L.cmo", fx);
+    m_modelRobots[static_cast<int>(Robot::Parts::MISSILE)] =
+        Model::CreateFromCMO(device, L"Resources/Models/Missile.cmo", fx);
+
+    // ロボットの作成
+    m_robot = std::make_unique<Robot>(gameContext, m_view, m_projection, m_modelRobots);
 }
 
 // プロジェクション行列を作成する関数

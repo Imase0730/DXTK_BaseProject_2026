@@ -8,6 +8,8 @@
 //--------------------------------------------------------------------------------------
 #pragma once
 
+#include <array>
+
 #include "ImaseLib/SceneManager.h"
 #include "GameContext.h"
 #include "../SceneId.h"
@@ -19,6 +21,7 @@
 #include "ImaseLib/ObjCollision.h"
 
 #include "Tank.h"
+#include "Robot.h"
 
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
 {
@@ -68,14 +71,20 @@ private:
 	// モデルデータの衝突判定
 	std::unique_ptr<Imase::ObjCollision> m_objCollision;
 
-	// モデルハンドル（戦車）
-    std::unique_ptr<DirectX::Model> m_modelTank;
+	// 各パーツのモデルハンドル（戦車）
+    std::array<std::unique_ptr<DirectX::Model>, Tank::PARTS_CNT> m_modelTanks;
 
 	// 戦車へのユニークポインタ
     std::unique_ptr<Tank> m_tank;
 
 	// 線分データ
 	DirectX::SimpleMath::Vector3 m_line[2];
+
+	// 各パーツのモデルハンドル（ロボット）
+    std::array<std::unique_ptr<DirectX::Model>, Robot::PARTS_CNT> m_modelRobots;
+
+    // ロボットへのユニークポインタ
+    std::unique_ptr<Robot> m_robot;
 
 };
 

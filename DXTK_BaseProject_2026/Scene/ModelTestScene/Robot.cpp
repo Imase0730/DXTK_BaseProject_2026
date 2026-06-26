@@ -1,10 +1,10 @@
 ﻿#include "pch.h"
-#include "Tank.h"
+#include "Robot.h"
 
 using namespace DirectX;
 
 // コンストラクタ
-Tank::Tank(
+Robot::Robot(
     const GameContext& gameContext,
     const DirectX::SimpleMath::Matrix& view,
     const DirectX::SimpleMath::Matrix& projection,
@@ -21,21 +21,30 @@ Tank::Tank(
     }
 
     // 親のインデックスを設定する
-    m_parentIndexes[static_cast<int>(Parts::BODY)] = -1;                                // 親はいない
+    m_parentIndexes[static_cast<int>(Parts::LEG)] = -1;                                 // 親はいない
+    m_parentIndexes[static_cast<int>(Parts::BODY)] = static_cast<int>(Parts::LEG);      // 親はLEG
     m_parentIndexes[static_cast<int>(Parts::HEAD)] = static_cast<int>(Parts::BODY);     // 親はBODY
-    m_parentIndexes[static_cast<int>(Parts::BARREL)] = static_cast<int>(Parts::HEAD);   // 親はHEAD
+    m_parentIndexes[static_cast<int>(Parts::ARM_R)] = static_cast<int>(Parts::BODY);    // 親はBODY
+    m_parentIndexes[static_cast<int>(Parts::ARM_L)] = static_cast<int>(Parts::BODY);    // 親はBODY
+    m_parentIndexes[static_cast<int>(Parts::MISSILE)] = static_cast<int>(Parts::ARM_L); // 親はARM_L
 
     // 初期化行列を作成
-    m_initializeMatrices[static_cast<int>(Parts::BODY)] =
+    m_initializeMatrices[static_cast<int>(Parts::LEG)] =
         SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
+    m_initializeMatrices[static_cast<int>(Parts::BODY)] =
+        SimpleMath::Matrix::CreateTranslation(0.0f, 0.32f, 0.0f);       // LEGからの相対距離
     m_initializeMatrices[static_cast<int>(Parts::HEAD)] =
-        SimpleMath::Matrix::CreateTranslation(0.0f, 0.49f, 0.0f);       // BODYからの相対距離
-    m_initializeMatrices[static_cast<int>(Parts::BARREL)] =
-        SimpleMath::Matrix::CreateTranslation(0.0f, 0.1f, -0.25f);      // HEADからの相対距離
+        SimpleMath::Matrix::CreateTranslation(0.0f, 0.43f, 0.0f);       // BODYからの相対距離
+    m_initializeMatrices[static_cast<int>(Parts::ARM_R)] =
+        SimpleMath::Matrix::CreateTranslation(0.18f, 0.4f, 0.0f);       // BODYからの相対距離
+    m_initializeMatrices[static_cast<int>(Parts::ARM_L)] =
+        SimpleMath::Matrix::CreateTranslation(-0.18f, 0.4f, 0.0f);      // BODYからの相対距離
+    m_initializeMatrices[static_cast<int>(Parts::MISSILE)] =
+        SimpleMath::Matrix::CreateTranslation(-0.1f, -0.2f, -0.39f);    // ARM_Lからの相対距離
 }
 
 // 更新
-void Tank::Update(float elapsedTime)
+void Robot::Update(float elapsedTime)
 {
     auto kb = Keyboard::Get().GetState();
 
@@ -51,54 +60,73 @@ void Tank::Update(float elapsedTime)
     }
 
     // 回転クォータニオンを作成する
-    m_rotates[static_cast<int>(Parts::BODY)] =
+    m_rotates[static_cast<int>(Parts::LEG)] =
         SimpleMath::Quaternion::CreateFromYawPitchRoll(m_facingAngleRad, 0.0f, 0.0f);
 
     // Forward(0,0,-1)を回転クォータニオンで回転させる
     SimpleMath::Vector3 v = 
-        SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, m_rotates[static_cast<int>(Parts::BODY)]);
+        SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, m_rotates[static_cast<int>(Parts::LEG)]);
 
     // 上キーで前進
     if (!kb.LeftShift && kb.Up)
     {
-        m_positions[static_cast<int>(Parts::BODY)] += v * MOVE_SPEED * elapsedTime;
+        m_positions[static_cast<int>(Parts::LEG)] += v * MOVE_SPEED * elapsedTime;
     }
     // 下キーで後進
     if (!kb.LeftShift && kb.Down)
     {
-        m_positions[static_cast<int>(Parts::BODY)] -= v * MOVE_SPEED * elapsedTime;
+        m_positions[static_cast<int>(Parts::LEG)] -= v * MOVE_SPEED * elapsedTime;
     }
 
-    // 左シフト＋左キーで砲塔を回転
+    // 左シフト＋左キーで体を回転
     if (kb.LeftShift && kb.Left)
     {
-        m_rotates[static_cast<int>(Parts::HEAD)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
+        m_rotates[static_cast<int>(Parts::BODY)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitY, XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
-    // 左シフト＋右キーで砲塔を回転
+    // 左シフト＋右キーで体を回転
     if (kb.LeftShift && kb.Right)
     {
-        m_rotates[static_cast<int>(Parts::HEAD)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
+        m_rotates[static_cast<int>(Parts::BODY)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitY, -XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
     
-    // 左シフト＋上キーで砲身を回転
+    // 左シフト＋上キーで左腕を回転
     if (kb.LeftShift && kb.Up)
     {
-        m_rotates[static_cast<int>(Parts::BARREL)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
+        m_rotates[static_cast<int>(Parts::ARM_L)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitX, XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
-    // 左シフト＋下キーで砲身を回転
+    // 左シフト＋下キーで左腕を回転
     if (kb.LeftShift && kb.Down)
     {
-        m_rotates[static_cast<int>(Parts::BARREL)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
+        m_rotates[static_cast<int>(Parts::ARM_L)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitX, -XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
+    }
+
+    // スペースキーでミサイルを発射
+    if (kb.Space)
+    {
+        // 発射フラグ（ON）
+        m_fireFlag = true;
+
+        // ミサイルを切り離す
+        m_parentIndexes[static_cast<int>(Parts::MISSILE)] = -1;
+
+        // ミサイルの位置をワールド行列から取得
+        m_positions[static_cast<int>(Parts::MISSILE)] = 
+            m_worldMatrices[static_cast<int>(Parts::MISSILE)].Translation();
+
+        // ミサイルの回転をワールド行列から取得
+        m_rotates[static_cast<int>(Parts::MISSILE)] =
+            SimpleMath::Quaternion::CreateFromRotationMatrix(m_worldMatrices[static_cast<int>(Parts::MISSILE)]);
+
     }
 
 }
 
 // 描画
-void Tank::Render()
+void Robot::Render()
 {
     // 各パーツの変換行列を作成
     for (size_t i = 0; i < PARTS_CNT; i++)
@@ -133,7 +161,7 @@ void Tank::Render()
 }
 
 // 位置を取得する関数
-DirectX::SimpleMath::Vector3 Tank::GetPosition() const
+DirectX::SimpleMath::Vector3 Robot::GetPosition() const
 {
-    return m_positions[static_cast<int>(Parts::BODY)];
+    return m_positions[static_cast<int>(Parts::LEG)];
 }

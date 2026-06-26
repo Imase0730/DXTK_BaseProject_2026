@@ -3,16 +3,19 @@
 #include "GameContext.h"
 #include <array>
 
-class Tank
+class Robot
 {
 public:
 
     // パーツ
     enum class Parts
     {
-        BODY,       // 車体
-        HEAD,       // 砲塔
-        BARREL,     // 砲身
+        LEG,        // 足
+        BODY,       // 体
+        HEAD,       // 頭
+        ARM_R,      // 右手
+        ARM_L,      // 左手
+        MISSILE,    // ミサイル
 
         PARTS_CNT
     };
@@ -21,7 +24,7 @@ public:
     static constexpr int PARTS_CNT = static_cast<int>(Parts::PARTS_CNT);
 
 	// コンストラクタ
-    Tank(
+    Robot(
         const GameContext& gameContext,
         const DirectX::SimpleMath::Matrix& view,
         const DirectX::SimpleMath::Matrix& projection,
@@ -37,16 +40,16 @@ public:
     // 位置を取得する関数
     DirectX::SimpleMath::Vector3 GetPosition() const;
 
-    // 戦車のY座標を設定する関数
+    // ロボットのY座標を設定する関数
     void SetPositionY(float y)
     {
-        m_positions[static_cast<int>(Parts::BODY)].y = y;
+        m_positions[static_cast<int>(Parts::LEG)].y = y;
     }
 
-    // 戦車の傾きを設定する関数
+    // ロボットの傾きを設定する関数
     void SetTilt(DirectX::SimpleMath::Quaternion tilt)
     {
-        m_rotates[static_cast<int>(Parts::BODY)] *= tilt;
+        m_rotates[static_cast<int>(Parts::LEG)] *= tilt;
     }
 
 private:
@@ -93,6 +96,9 @@ private:
 
     // 各パーツの親のインデックス
     int m_parentIndexes[PARTS_CNT];
+
+    // ミサイル発射フラグ
+    bool m_fireFlag = false;
 
 };
 

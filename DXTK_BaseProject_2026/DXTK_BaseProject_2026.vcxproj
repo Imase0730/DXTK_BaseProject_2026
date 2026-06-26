@@ -202,6 +202,7 @@
     <ClInclude Include="Common\StepTimer.h" />
     <ClInclude Include="Scene\BaseScene\BaseScene.h" />
     <ClInclude Include="Scene\ModelTestScene\ModelTestScene.h" />
+    <ClInclude Include="Scene\ModelTestScene\Robot.h" />
     <ClInclude Include="Scene\ModelTestScene\Tank.h" />
     <ClInclude Include="Scene\SceneId.h" />
     <ClInclude Include="Scene\ShootingGameScene\CollisionManager.h" />
@@ -238,6 +239,7 @@
     </ClCompile>
     <ClCompile Include="Scene\BaseScene\BaseScene.cpp" />
     <ClCompile Include="Scene\ModelTestScene\ModelTestScene.cpp" />
+    <ClCompile Include="Scene\ModelTestScene\Robot.cpp" />
     <ClCompile Include="Scene\ModelTestScene\Tank.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\CollisionManager.cpp" />
     <ClCompile Include="Scene\ShootingGameScene\ShootingGameScene.cpp" />
