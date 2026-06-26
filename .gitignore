@@ -363,5 +363,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # ただし 指定フォルダ内は無視しない
+!DXTK_BaseProject_2026/Resources/**/*.obj
 !ResourceBuild/Models/*
 !ResourceBuild/Textures/*
