@@ -20,7 +20,6 @@
 #include "ImaseLib/CollisionRenderer.h"
 #include "ImaseLib/ObjCollision.h"
 
-#include "Tank.h"
 #include "Robot.h"
 
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
@@ -54,7 +53,8 @@ private:
     std::unique_ptr<Imase::GridFloor> m_gridFloor;
 
 	// プロジェクション行列を作成する関数
-    DirectX::SimpleMath::Matrix CreateProjectionMatrix(GameContext& gameContext);
+    DirectX::SimpleMath::Matrix CreateProjectionMatrix(
+		GameContext& gameContext, float nearClip, float farClip);
 
 	// ウインドウサイズ変更時に呼び出される関数
     void OnWindowSizeChanged(GameContext& gameContext) override;
@@ -71,12 +71,6 @@ private:
 	// モデルデータの衝突判定
 	std::unique_ptr<Imase::ObjCollision> m_objCollision;
 
-	// 各パーツのモデルハンドル（戦車）
-    std::array<std::unique_ptr<DirectX::Model>, Tank::PARTS_CNT> m_modelTanks;
-
-	// 戦車へのユニークポインタ
-    std::unique_ptr<Tank> m_tank;
-
 	// 線分データ
 	DirectX::SimpleMath::Vector3 m_line[2];
 
@@ -86,5 +80,45 @@ private:
     // ロボットへのユニークポインタ
     std::unique_ptr<Robot> m_robot;
 
+	// ----- カメラ関係 ----- //
+
+	// カメラの移動の速さ（1秒間あたりの移動量）
+    static constexpr float CAMERA_MOVE_SPEED = 2.0f;
+
+	// カメラの回転の速さ（１秒間あたりの回転量）
+    static constexpr float CAMERA_ROTATE_SPEED_RAD = DirectX::XMConvertToRadians(60.0f);
+
+	// カメラモード
+	enum class CameraMode
+	{
+		Game,		// ゲーム中
+		Debug,		// デバッグモード
+	};
+
+	CameraMode m_cameraMode = CameraMode::Debug;
+
+	// カメラの位置
+    DirectX::SimpleMath::Vector3 m_cameraPosition = { 0.0f, 1.0f, 3.0f };
+
+	// カメラの回転
+    DirectX::SimpleMath::Quaternion m_cameraRotation;
+
+	// カメラの更新用の入力情報構造体
+	struct CameraInput
+	{
+        float forwardAxis;	//   前進 1　  後進 -1
+        float rightAxis;	// 右移動 1　左移動 -1
+        float yawAxis;		// 左回転 1　右回転 -1
+        float pitchAxis;	// 上回転 1　下回転 -1
+	};
+
+	// ゲームカメラの更新関数
+    void UpdateGameCamera(float elapsedTime, const CameraInput& input);
+
+	// ゲーム中のビュー行列
+    DirectX::SimpleMath::Matrix m_gameViewMatrix;
+
+	// マウスの位置
+	DirectX::SimpleMath::Vector2 m_mousePosition;
 };
 

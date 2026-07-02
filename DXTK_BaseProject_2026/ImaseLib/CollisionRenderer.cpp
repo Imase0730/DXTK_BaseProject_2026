@@ -138,6 +138,7 @@ void CollisionRenderer::DrawCollision(
 	// 登録された表示情報をクリアする
 	m_spheres.clear();
 	m_boxes.clear();
+    m_frustums.clear();
 	m_lineSegments.clear();
 	m_meshes.clear();
 }
@@ -265,6 +266,17 @@ void CollisionRenderer::DrawCollisionLine(
 		if (m_boxes[i].lineColor.w != 0.0f) lineColor = m_boxes[i].lineColor;
 		DX::Draw(m_primitiveBatch.get(), box, lineColor);
 	}
+
+	// ----- 視錐台を描画 ----- //
+    for (int i = 0; i < m_frustums.size(); i++)
+    {
+        SimpleMath::Color lineColor = color;
+        if (m_frustums[i].lineColor.w != 0.0f)
+            lineColor = m_frustums[i].lineColor;
+
+        // 視錐台の描画
+        DX::Draw(m_primitiveBatch.get(), m_frustums[i].frustum, lineColor);
+    }
 
 	// ----- 線分を描画 ----- //
 	for (int i = 0; i < m_lineSegments.size(); i++)

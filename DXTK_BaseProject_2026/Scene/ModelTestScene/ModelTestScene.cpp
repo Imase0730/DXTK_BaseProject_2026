@@ -24,8 +24,78 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
 
+    // キーボードステートの取得
+    auto kb = Keyboard::Get().GetState();
+
+    // スペースキーでカメラモードを切り替え
+    if (gameContext.keyboardTracker.pressed.Space)
+    {
+        if (m_cameraMode == CameraMode::Game)
+        {
+            m_cameraMode = CameraMode::Debug;
+        }
+        else
+        {
+            m_cameraMode = CameraMode::Game;
+        }
+    }
+
+    // ゲーム中なら
+    if (m_cameraMode == CameraMode::Game)
+    {
+        // マウスの位置を取得する
+        auto mouse = Mouse::Get().GetState();
+        m_mousePosition.x = static_cast<float>(mouse.x);
+        m_mousePosition.y = static_cast<float>(mouse.y);
+    }
+
+    CameraInput input = {};
+
+    // 上下キーで前進後進
+    if (!kb.LeftShift && kb.Up)
+    {
+        input.forwardAxis = 1.0f;
+    }
+    if (!kb.LeftShift && kb.Down)
+    {
+        input.forwardAxis = -1.0f;
+    }
+
+    // 左右キーで左右移動
+    if (!kb.LeftShift && kb.Right)
+    {
+        input.rightAxis = 1.0f;
+    }
+    if (!kb.LeftShift && kb.Left)
+    {
+        input.rightAxis = -1.0f;
+    }
+
+    //  左シフト＋上下キーで上下回転
+    if (kb.LeftShift && kb.Up)
+    {
+        input.pitchAxis = 1.0f;
+    }
+    if (kb.LeftShift && kb.Down)
+    {
+        input.pitchAxis = -1.0f;
+    }
+
+    // 左シフト＋左右キーで左右回転
+    if (kb.LeftShift && kb.Left)
+    {
+        input.yawAxis = 1.0f;
+    }
+    if (kb.LeftShift && kb.Right)
+    {
+        input.yawAxis= -1.0f;
+    }
+
+    // ゲーム中のカメラを更新
+    UpdateGameCamera(elapsedTime, input);
+
     // ロボットの更新
-    m_robot->Update(elapsedTime);
+    //m_robot->Update(elapsedTime);
 
     // ロボットの位置に線分を表示する
     m_line[0].x = m_robot->GetPosition().x;
@@ -63,8 +133,51 @@ void ModelTestScene::Render(GameContext& gameContext)
     // DirectX3Dのデバイスコンテキストを取得する
     auto context = gameContext.deviceResources.GetD3DDeviceContext();
 
-	// デバッグカメラからビュー行列を取得する
-    m_view = m_debugCamera->GetCameraMatrix();
+    // ゲーム中のビュー行列を設定
+    m_view = m_gameViewMatrix;
+
+    // ゲーム中のプロジェクション行列を作成
+    m_projection = CreateProjectionMatrix(gameContext, 1.0f, 5.0f);
+
+    // ----- マウスレイの表示 ----- //
+    // ビューポート
+    SimpleMath::Viewport viewport(0.0f, 0.0f, 1280.0f, 720.0f);
+
+    // マウスの位置
+    SimpleMath::Vector3 screenPosNear(m_mousePosition.x, m_mousePosition.y, 0.0f);
+    SimpleMath::Vector3 screenPosFar(m_mousePosition.x, m_mousePosition.y, 1.0f);
+
+    // マウスの位置をワールド空間へ
+    SimpleMath::Vector3 worldPosNear =
+        viewport.Unproject(screenPosNear, m_projection, m_view, SimpleMath::Matrix::Identity);
+    SimpleMath::Vector3 worldPosFar =
+        viewport.Unproject(screenPosFar, m_projection, m_view, SimpleMath::Matrix::Identity);
+
+    // 線分の表示
+    m_collisionRenderer->AddLineSegment(worldPosNear, worldPosFar, Colors::Yellow);
+    // ---------------------------- //
+
+    // デバッグモードなら
+    if (m_cameraMode == CameraMode::Debug)
+    {
+        // ----- ゲーム中の視錐台の表示 ----- //
+        DirectX::BoundingFrustum worldFrustum;
+
+        // プロジェクション行列から視錐台を作成
+        DirectX::BoundingFrustum::CreateFromMatrix(worldFrustum, m_projection, true);
+
+        // 視錐台をワールド空間に変換する
+        worldFrustum.Transform(worldFrustum, m_view.Invert());
+
+        // 視錐台の表示
+        m_collisionRenderer->AddBoundingVolume(worldFrustum, Colors::Red);
+
+        // デバッグカメラからビュー行列を取得する
+        m_view = m_debugCamera->GetCameraMatrix();
+
+        // プロジェクション行列を元に戻す
+        m_projection = CreateProjectionMatrix(gameContext, 0.1f, 100.0f);
+    }
 
 	// グリッドフロアの描画
 	//m_gridFloor->Render(context, m_view, m_projection);
@@ -72,9 +185,6 @@ void ModelTestScene::Render(GameContext& gameContext)
     // 床の描画
     SimpleMath::Matrix world;
     // m_modelFloor->Draw(context, gameContext.commonStates, world, m_view, m_projection);
-
-    // 戦車の描画
-    //m_tank->Render();
 
     // ロボットの描画
     m_robot->Render();
@@ -93,7 +203,7 @@ void ModelTestScene::Render(GameContext& gameContext)
 void ModelTestScene::OnEnter(GameContext& gameContext)
 {
     // プロジェクション行列を設定する
-    m_projection = CreateProjectionMatrix(gameContext);
+    m_projection = CreateProjectionMatrix(gameContext, 0.1f, 100.0f);
 
     // DirectX3Dのデバイスを取得する
     auto device = gameContext.deviceResources.GetD3DDevice();
@@ -123,17 +233,6 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
     // モデルデータから衝突判定用データを作成
     m_objCollision = std::make_unique<Imase::ObjCollision>("Resources/Models/Floor.obj");
 
-    // 各パーツのモデルの読み込み（戦車）
-    m_modelTanks[static_cast<int>(Tank::Parts::BODY)] =
-        Model::CreateFromCMO(device, L"Resources/Models/TankBody.cmo", fx);
-    m_modelTanks[static_cast<int>(Tank::Parts::HEAD)] =
-        Model::CreateFromCMO(device, L"Resources/Models/TankHead.cmo", fx);
-    m_modelTanks[static_cast<int>(Tank::Parts::BARREL)] =
-        Model::CreateFromCMO(device, L"Resources/Models/TankBarrel.cmo", fx);
-
-    // 戦車の作成
-    m_tank = std::make_unique<Tank>(gameContext, m_view, m_projection, m_modelTanks);
-
     // 各パーツのモデルの読み込み（ロボット）
     m_modelRobots[static_cast<int>(Robot::Parts::LEG)] =
         Model::CreateFromCMO(device, L"Resources/Models/Leg.cmo", fx);
@@ -153,7 +252,11 @@ void ModelTestScene::OnEnter(GameContext& gameContext)
 }
 
 // プロジェクション行列を作成する関数
-DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(GameContext& gameContext)
+DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(
+    GameContext& gameContext,
+    float nearClip,
+    float farClip
+)
 {
     SimpleMath::Matrix m;
 
@@ -164,8 +267,8 @@ DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(GameContext& 
 	m = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		XMConvertToRadians(45.0f),	// 画角
 		static_cast<float>(rect.right) / static_cast<float>(rect.bottom),	// アスペクト比
-		0.1f,	// Near Clip
-		1000.0f	// Far Clip
+		nearClip,	// Near Clip
+		farClip 	// Far Clip
 	);
 
     return m;
@@ -175,5 +278,44 @@ DirectX::SimpleMath::Matrix ModelTestScene::CreateProjectionMatrix(GameContext& 
 void ModelTestScene::OnWindowSizeChanged(GameContext& gameContext)
 {
     // プロジェクション行列を設定する
-    m_projection = CreateProjectionMatrix(gameContext);
+    m_projection = CreateProjectionMatrix(gameContext, 0.1f, 100.0f);
+}
+
+// ゲームカメラの更新関数
+void ModelTestScene::UpdateGameCamera(float elapsedTime, const CameraInput& input)
+{
+    // 今回の移動量と回転量をもとめる
+    float movesSpeed = CAMERA_MOVE_SPEED * elapsedTime;
+    float rotateSpeed = CAMERA_ROTATE_SPEED_RAD * elapsedTime;
+
+    // 現在の回転から「カメラの右方向（横軸）」をもとめる
+    SimpleMath::Vector3 right = 
+        SimpleMath::Vector3::Transform(SimpleMath::Vector3::Right, m_cameraRotation);
+
+    // 左右：ワールド空間も上方向を軸にする
+    SimpleMath::Quaternion yawRotation =
+        SimpleMath::Quaternion::CreateFromAxisAngle(SimpleMath::Vector3::Up, input.yawAxis * rotateSpeed);
+
+    // 上下：カメラの右方向(right)を軸にする
+    SimpleMath::Quaternion pitchRotation =
+        SimpleMath::Quaternion::CreateFromAxisAngle(right, input.pitchAxis * rotateSpeed);
+
+    // 「現在の回転」に対して上下回転を適用し、最後に左右回転を適応する
+    m_cameraRotation = m_cameraRotation * pitchRotation * yawRotation;
+
+    // 誤差が蓄積して歪むのを防ぐため正規化する
+    m_cameraRotation.Normalize();
+
+    // 最新の回転から「前方向」と「右方向」を再計算する
+    SimpleMath::Vector3 forward = SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, m_cameraRotation);
+    right = SimpleMath::Vector3::Transform(SimpleMath::Vector3::Right, m_cameraRotation);
+
+    // カメラの位置を移動
+    m_cameraPosition += forward * movesSpeed * input.forwardAxis;
+    m_cameraPosition += right * movesSpeed * input.rightAxis;
+
+    // ゲーム中のカメラのビュー行列を作成
+    SimpleMath::Vector3 target = m_cameraPosition + forward;
+    SimpleMath::Vector3 up = SimpleMath::Vector3::Transform(SimpleMath::Vector3::Up, m_cameraRotation);
+    m_gameViewMatrix = SimpleMath::Matrix::CreateLookAt(m_cameraPosition, target, up);
 }

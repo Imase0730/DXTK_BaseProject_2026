@@ -123,6 +123,29 @@ void Robot::Update(float elapsedTime)
 
     }
 
+    // ミサイルが発射中なら
+    if (m_fireFlag)
+    {
+        // ミサイルを回転させる
+        m_rotates[static_cast<int>(Parts::MISSILE)] =
+              SimpleMath::Quaternion::CreateFromAxisAngle(SimpleMath::Vector3::UnitZ, XMConvertToRadians(2.0f))
+            * m_rotates[static_cast<int>(Parts::MISSILE)];
+
+        // ミサイルを移動させる
+        SimpleMath::Vector3 velocity(0.0f, 0.0f, -0.01f);   // ミサイルの速度ベクトル
+        m_positions[static_cast<int>(Parts::MISSILE)] +=
+            SimpleMath::Vector3::Transform(velocity, m_rotates[static_cast<int>(Parts::MISSILE)]);
+    }
+
+    // Zキーでミサイルをリセット
+    if (kb.Z)
+    {
+        m_fireFlag = false;
+        m_parentIndexes[static_cast<int>(Parts::MISSILE)] = static_cast<int>(Parts::ARM_L);
+        m_positions[static_cast<int>(Parts::MISSILE)] = SimpleMath::Vector3::Zero;
+        m_rotates[static_cast<int>(Parts::MISSILE)] = SimpleMath::Quaternion::Identity;
+    }
+
 }
 
 // 描画
