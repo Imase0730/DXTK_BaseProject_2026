@@ -43,7 +43,15 @@ public:
 	// 衝突判定を行う関数(実際の判定用)
 	bool Intersects(const DirectX::BoundingSphere& geometry) const override;
 	bool Intersects(const DirectX::BoundingBox& geometry) const override;
-	bool Intersects(const DirectX::BoundingOrientedBox& geometry) const override;
+    bool Intersects(const DirectX::BoundingOrientedBox& geometry) const override;
+    bool Intersects(const DirectX::BoundingFrustum& geometry) const override;
+
+	// 衝突判定を行う関数 (対 Triangle)
+    bool Intersects(DirectX::FXMVECTOR V0, DirectX::FXMVECTOR V1, DirectX::FXMVECTOR V2) const override;
+    // 衝突判定を行う関数 (対 Plane)
+    DirectX::PlaneIntersectionType Intersects(DirectX::FXMVECTOR Plane) const override;
+    // 衝突判定を行う関数 (対 Ray)
+    bool Intersects(DirectX::FXMVECTOR origin, DirectX::FXMVECTOR direction, float& dist) const override;
 
 	// モデルから形状コレクションの生成関数
 	static ICollisionGeometry::Collection CreateCollectionFromModel(const DirectX::Model* pModel);
@@ -102,10 +110,35 @@ bool CollisionGeometry<T>::Intersects(const DirectX::BoundingBox& geometry) cons
 }
 
 // 衝突判定を行う関数(対OBB)
-template <typename T>
-bool CollisionGeometry<T>::Intersects(const DirectX::BoundingOrientedBox& geometry) const
+template <typename T> bool CollisionGeometry<T>::Intersects(const DirectX::BoundingOrientedBox& geometry) const
 {
-	return m_geometry.Intersects(geometry);
+    return m_geometry.Intersects(geometry);
+}
+
+// 衝突判定を行う関数(対Frustum)
+template <typename T> bool CollisionGeometry<T>::Intersects(const DirectX::BoundingFrustum& geometry) const
+{
+    return m_geometry.Intersects(geometry);
+}
+
+// 衝突判定を行う関数 (対 Triangle)
+template <typename T>
+bool CollisionGeometry<T>::Intersects(DirectX::FXMVECTOR V0, DirectX::FXMVECTOR V1, DirectX::FXMVECTOR V2) const
+{
+    return m_geometry.Intersects(V0, V1, V2);
+}
+
+// 衝突判定を行う関数 (対 Plane)
+template <typename T> DirectX::PlaneIntersectionType CollisionGeometry<T>::Intersects(DirectX::FXMVECTOR Plane) const
+{
+    return m_geometry.Intersects(Plane);
+}
+
+// 衝突判定を行う関数(対Ray)
+template <typename T>
+bool CollisionGeometry<T>::Intersects(DirectX::FXMVECTOR origin, DirectX::FXMVECTOR direction, float& dist) const
+{
+    return m_geometry.Intersects(origin, direction, dist);
 }
 
 // モデルから衝突判定コレクションの生成関数
@@ -177,7 +210,7 @@ CollisionOrientedBox::CollisionGeometry(const std::shared_ptr<DirectX::ModelMesh
 }
 
 
-// 衝突判定形状（AABB）用更新関数
+// 衝突判定形状（OBB）用更新関数
 void CollisionOrientedBox::Update(
 	const DirectX::SimpleMath::Vector3& position,
 	const DirectX::SimpleMath::Quaternion& rotate
@@ -216,17 +249,100 @@ ModelCollision::ModelCollision(
 // 衝突判定を行う関数
 bool ModelCollision::Intersects(const ModelCollision* collision) const
 {
-	for (auto& data_a : m_geometries)
-	{
-		for (auto& data_b : collision->m_geometries)
+    for (auto& data_a : m_geometries)
+    {
+        for (auto& data_b : collision->m_geometries)
+        {
+            if (data_a->Intersects(data_b))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+// 衝突判定を行う関数（対 Triangle）
+bool Imase::ModelCollision::Intersects(DirectX::FXMVECTOR V0, DirectX::FXMVECTOR V1, DirectX::FXMVECTOR V2) const
+{
+    for (auto& data : m_geometries)
+    {
+        if (data->Intersects(V0, V1, V2))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 衝突判定を行う関数（対 Plane）
+DirectX::PlaneIntersectionType Imase::ModelCollision::Intersects(DirectX::FXMVECTOR Plane) const
+{
+    bool hasFront = false;
+    bool hasBack = false;
+
+    for (const auto& data : m_geometries)
+    {
+        DirectX::PlaneIntersectionType result = data->Intersects(Plane);
+
+        switch (result)
+        {
+            case DirectX::PlaneIntersectionType::INTERSECTING:
+                // 1つでも平面をまたぐメッシュがあれば、モデル全体としても交差状態が確定
+                return DirectX::PlaneIntersectionType::INTERSECTING;
+
+            case DirectX::PlaneIntersectionType::FRONT:
+                hasFront = true;
+                break;
+
+            case DirectX::PlaneIntersectionType::BACK:
+                hasBack = true;
+                break;
+        }
+
+        // 表側にあるメッシュと裏側にあるメッシュが混在している場合、
+        // モデル全体としては平面をまたいでいる（交差している）ことになる
+        if (hasFront && hasBack)
+        {
+            return DirectX::PlaneIntersectionType::INTERSECTING;
+        }
+    }
+
+    // すべてのメッシュが表側、あるいは裏側のどちらか片方に統一されている場合
+    if (hasFront)
+    {
+        return DirectX::PlaneIntersectionType::FRONT;
+    }
+    else
+    {
+        return DirectX::PlaneIntersectionType::BACK;
+    }
+}
+
+// 衝突判定を行う関数（対 Ray）
+bool ModelCollision::Intersects(DirectX::FXMVECTOR origin, DirectX::FXMVECTOR direction, float& dist) const
+{
+    for (auto& data : m_geometries)
+    {
+		if (data->Intersects(origin, direction, dist))
 		{
-			if (data_a->Intersects(data_b))
-			{
-				return true;
-			}
+		    return true;
 		}
-	}
-	return false;
+    }
+    return false;
+}
+
+// 衝突判定を行う関数（対 Frustum）
+bool Imase::ModelCollision::Intersects(const DirectX::BoundingFrustum& frustum) const
+{
+    for (auto& data : m_geometries)
+    {
+        if (data->Intersects(frustum))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 // コリジョン情報の更新
