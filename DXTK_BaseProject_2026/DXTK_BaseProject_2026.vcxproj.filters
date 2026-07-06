@@ -133,6 +133,9 @@
     <ClInclude Include="Scene\ModelTestScene\Robot.h">
       <Filter>Scene\ModelsTestScene</Filter>
     </ClInclude>
+    <ClInclude Include="ImaseLib\InputManager.h">
+      <Filter>ImaseLib</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -212,6 +215,9 @@
     </ClCompile>
     <ClCompile Include="Scene\ModelTestScene\Robot.cpp">
       <Filter>Scene\ModelsTestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaseLib\InputManager.cpp">
+      <Filter>ImaseLib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
