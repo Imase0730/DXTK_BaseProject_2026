@@ -24,11 +24,8 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 	// 経過時間を取得する
 	float elapsedTime = static_cast<float>(gameContext.timer.GetElapsedSeconds());
 
-    // キーボードステートの取得
-    auto kb = Keyboard::Get().GetState();
-
-    // スペースキーでカメラモードを切り替え
-    if (gameContext.keyboardTracker.pressed.Space)
+    // カメラモードを切り替え
+    if (m_inputMain->IsTriggered("CameraMode"))
     {
         if (m_cameraMode == CameraMode::Game)
         {
@@ -38,6 +35,37 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
         {
             m_cameraMode = CameraMode::Game;
         }
+    }
+
+    // 操作モードを切り替え
+    if (m_inputMain->IsTriggered("ControlMode"))
+    {
+        if (m_controlMode == ControlMode::Robot)
+        {
+            m_controlMode = ControlMode::Camera;
+        }
+        else
+        {
+            m_controlMode = ControlMode::Robot;
+        }
+    }
+
+    // キーで操作する物を切り替える
+    if (m_controlMode == ControlMode::Robot)
+    {
+        // ロボットの操作を有効
+        m_robot->SetEnableControl(true);
+        // カメラの操作を無効
+        m_inputCamera->SetEnabled(false);
+        debugRenderer.DrawText({0.0f, 25.0f}, L"Control:Robot");
+    }
+    else
+    {
+        // カメラの操作を有効
+        m_inputCamera->SetEnabled(true);
+        // ロボットの操作を無効
+        m_robot->SetEnableControl(false);
+        debugRenderer.DrawText({0.0f, 25.0f}, L"Control:Camera");
     }
 
     // ゲーム中なら
@@ -51,42 +79,42 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
 
     CameraInput input = {};
 
-    // 上下キーで前進後進
-    if (!kb.LeftShift && kb.Up)
+    // 前進後進
+    if (m_inputCamera->IsPressed("MoveForward"))
     {
         input.forwardAxis = 1.0f;
     }
-    if (!kb.LeftShift && kb.Down)
+    if (m_inputCamera->IsPressed("MoveBackward"))
     {
         input.forwardAxis = -1.0f;
     }
 
-    // 左右キーで左右移動
-    if (!kb.LeftShift && kb.Right)
+    // 左右移動
+    if (m_inputCamera->IsPressed("MoveRight"))
     {
         input.rightAxis = 1.0f;
     }
-    if (!kb.LeftShift && kb.Left)
+    if (m_inputCamera->IsPressed("MoveLeft"))
     {
         input.rightAxis = -1.0f;
     }
 
-    //  左シフト＋上下キーで上下回転
-    if (kb.LeftShift && kb.Up)
+    // 上下回転
+    if (m_inputCamera->IsPressed("RotateUp"))
     {
         input.pitchAxis = 1.0f;
     }
-    if (kb.LeftShift && kb.Down)
+    if (m_inputCamera->IsPressed("RotateDown"))
     {
         input.pitchAxis = -1.0f;
     }
 
-    // 左シフト＋左右キーで左右回転
-    if (kb.LeftShift && kb.Left)
+    // 左右回転
+    if (m_inputCamera->IsPressed("RotateLeft"))
     {
         input.yawAxis = 1.0f;
     }
-    if (kb.LeftShift && kb.Right)
+    if (m_inputCamera->IsPressed("RotateRight"))
     {
         input.yawAxis= -1.0f;
     }
@@ -95,31 +123,7 @@ void ModelTestScene::Update(Imase::ISceneController<SceneId>& sceneController, G
     UpdateGameCamera(elapsedTime, input);
 
     // ロボットの更新
-    //m_robot->Update(elapsedTime);
-
-    // ロボットの位置に線分を表示する
-    m_line[0].x = m_robot->GetPosition().x;
-    m_line[1].x = m_robot->GetPosition().x;
-    m_line[0].y = 2.0f;
-    m_line[1].y = -2.0f;
-    m_line[0].z = m_robot->GetPosition().z;
-    m_line[1].z = m_robot->GetPosition().z;
-
-    // 床のモデルと線分の交差判定
-    SimpleMath::Vector3 hitPosition;
-    SimpleMath::Vector3 normal;
-    if (m_objCollision->IntersectLineSegment(m_line[0], m_line[1], &hitPosition, &normal))
-    {
-        // ロボットのY座標を設定する
-        m_robot->SetPositionY(hitPosition.y);
-
-        // 床の法線方向へ傾けるクォータニオンを作成する
-        SimpleMath::Quaternion q = SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Up, normal);
-        // ロボットを傾ける
-        m_robot->SetTilt(q);
-
-        debugRenderer.DrawText({ 0.0f, 50.0f }, L"Hit!");
-    }
+    m_robot->Update(elapsedTime, m_objCollision);
 
     // デバッグカメラの更新
     m_debugCamera->Update(elapsedTime);
@@ -157,6 +161,15 @@ void ModelTestScene::Render(GameContext& gameContext)
     m_collisionRenderer->AddLineSegment(worldPosNear, worldPosFar, Colors::Yellow);
     // ---------------------------- //
 
+    // マウスとロボットの交差判定
+    SimpleMath::Vector3 direction = worldPosFar - worldPosNear;
+    // 正規化する
+    direction.Normalize();
+    if (m_robot->IsHitRay(worldPosNear, direction))
+    {
+        gameContext.debugRenderer.DrawText({0.0f, 50.0f}, L"MouseRay Hit!");
+    }
+
     // デバッグモードなら
     if (m_cameraMode == CameraMode::Debug)
     {
@@ -177,6 +190,12 @@ void ModelTestScene::Render(GameContext& gameContext)
 
         // プロジェクション行列を元に戻す
         m_projection = CreateProjectionMatrix(gameContext, 0.1f, 100.0f);
+
+        // ロボットと視錐台の交差判定
+        if (m_robot->IsHitFrustum(worldFrustum))
+        {
+            gameContext.debugRenderer.DrawText({0.0f, 75.0f}, L"Frustum Hit!");
+        }
     }
 
 	// グリッドフロアの描画
@@ -189,11 +208,11 @@ void ModelTestScene::Render(GameContext& gameContext)
     // ロボットの描画
     m_robot->Render();
 
+    // ロボットのコリジョン情報の表示
+    m_robot->DisplayCollision(m_collisionRenderer.get());
+
     // 衝突判定用のモデルデータ（床）の表示
     m_objCollision->AddCollisionRenderer(m_collisionRenderer.get());
-
-    // 線分の表示
-    m_collisionRenderer->AddLineSegment(m_line[0], m_line[1], Colors::Blue);
 
     // コリジョン情報の描画
     m_collisionRenderer->DrawCollision(context, gameContext.commonStates, m_view, m_projection);
@@ -202,6 +221,30 @@ void ModelTestScene::Render(GameContext& gameContext)
 // シーン切り替え時に呼び出される関数
 void ModelTestScene::OnEnter(GameContext& gameContext)
 {
+    // メイン用のキー入力マネージャーの作成
+    m_inputMain = std::make_unique<Imase::InputManager>(gameContext.keyboardTracker);
+
+    // カメラ用のキー入力マネージャーの作成
+    m_inputCamera = std::make_unique<Imase::InputManager>(gameContext.keyboardTracker);
+
+    // ----- 入力キーの登録 ----- //
+    // メイン用
+    m_inputMain->BindAction("CameraMode",  Keyboard::Keys::Space);
+    m_inputMain->BindAction("ControlMode", Keyboard::Keys::C);
+
+    // カメラの移動
+    m_inputCamera->BindAction("MoveForward",  Keyboard::Keys::Up);
+    m_inputCamera->BindAction("MoveBackward", Keyboard::Keys::Down);
+    m_inputCamera->BindAction("MoveLeft",     Keyboard::Keys::Left);
+    m_inputCamera->BindAction("MoveRight",    Keyboard::Keys::Right);
+
+    // カメラの回転
+    m_inputCamera->BindAction("RotateUp",    Keyboard::Keys::Up,    Imase::InputManager::Shift);
+    m_inputCamera->BindAction("RotateDown",  Keyboard::Keys::Down,  Imase::InputManager::Shift);
+    m_inputCamera->BindAction("RotateLeft",  Keyboard::Keys::Left,  Imase::InputManager::Shift);
+    m_inputCamera->BindAction("RotateRight", Keyboard::Keys::Right, Imase::InputManager::Shift);
+    // -------------------------- //
+
     // プロジェクション行列を設定する
     m_projection = CreateProjectionMatrix(gameContext, 0.1f, 100.0f);
 

@@ -20,6 +20,8 @@
 #include "ImaseLib/CollisionRenderer.h"
 #include "ImaseLib/ObjCollision.h"
 
+#include "ImaseLib/InputManager.h"
+
 #include "Robot.h"
 
 class ModelTestScene : public Imase::SceneBase<SceneId, GameContext>
@@ -39,6 +41,12 @@ public:
 	void OnEnter(GameContext& gameContext) override;
 
 private:
+
+	// メイン用のキー入力マネージャー
+    std::unique_ptr<Imase::InputManager> m_inputMain;
+
+	// カメラ用のキー入力マネージャー
+    std::unique_ptr<Imase::InputManager> m_inputCamera;
 
 	// ビュー行列
     DirectX::SimpleMath::Matrix m_view;
@@ -70,9 +78,6 @@ private:
 
 	// モデルデータの衝突判定
 	std::unique_ptr<Imase::ObjCollision> m_objCollision;
-
-	// 線分データ
-	DirectX::SimpleMath::Vector3 m_line[2];
 
 	// 各パーツのモデルハンドル（ロボット）
     std::array<std::unique_ptr<DirectX::Model>, Robot::PARTS_CNT> m_modelRobots;
@@ -120,5 +125,15 @@ private:
 
 	// マウスの位置
 	DirectX::SimpleMath::Vector2 m_mousePosition;
+
+	// 操作モード
+	enum class ControlMode
+	{
+		Robot,
+		Camera,
+	};
+
+	ControlMode m_controlMode = ControlMode::Camera;
+
 };
 

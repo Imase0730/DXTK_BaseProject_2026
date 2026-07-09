@@ -14,10 +14,39 @@ Robot::Robot(
     , m_view(view)
     , m_projection(projection)
 {
-    // 各モデルへのポインタを取得
+    // ロボットのキー入力マネージャーの作成
+    m_inputRobot = std::make_unique<Imase::InputManager>(gameContext.keyboardTracker);
+
+    // ----- 入力キーの登録 ----- //
+    // ロボットの移動
+    m_inputRobot->BindAction("MoveForward",  Keyboard::Keys::Up);
+    m_inputRobot->BindAction("MoveBackward", Keyboard::Keys::Down);
+
+    // ロボットの回転
+    m_inputRobot->BindAction("RotateLeft",  Keyboard::Keys::Left);
+    m_inputRobot->BindAction("RotateRight", Keyboard::Keys::Right);
+
+    // ロボットの体の回転
+    m_inputRobot->BindAction("BodyRotateLeft",  Keyboard::Keys::Left,  Imase::InputManager::Shift);
+    m_inputRobot->BindAction("BodyRotateRight", Keyboard::Keys::Right, Imase::InputManager::Shift);
+
+    // ロボットの左腕の回転
+    m_inputRobot->BindAction("ArmLRotateUp",   Keyboard::Keys::Up,   Imase::InputManager::Shift);
+    m_inputRobot->BindAction("ArmLRotateDown", Keyboard::Keys::Down, Imase::InputManager::Shift);
+
+    // ミサイル関係
+    m_inputRobot->BindAction("ShootMissile", Keyboard::Keys::X);
+    m_inputRobot->BindAction("ResetMissile", Keyboard::Keys::Z);
+    // -------------------------- //
+ 
     for (size_t i = 0; i < PARTS_CNT; i++)
     {
+        // モデルへのポインタを取得
         m_pModels[i] = model[i].get();
+
+        // コリジョン情報を作成
+        m_modelCollisions[i] =
+            Imase::ModelCollisionFactory::CreateCollision(m_pModels[i], Imase::ModelCollision::CollisionType::OBB);
     }
 
     // 親のインデックスを設定する
@@ -44,17 +73,18 @@ Robot::Robot(
 }
 
 // 更新
-void Robot::Update(float elapsedTime)
+void Robot::Update(
+    float elapsedTime,
+    const std::unique_ptr<Imase::ObjCollision>& floor
+)
 {
-    auto kb = Keyboard::Get().GetState();
-
-    // 左キーで左回転
-    if (!kb.LeftShift && kb.Left)
+    // 左回転
+    if (m_inputRobot->IsPressed("RotateLeft"))
     {
         m_facingAngleRad += XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime;
     }
-    // 右キーで右回転
-    if (!kb.LeftShift && kb.Right)
+    // 右回転
+    if (m_inputRobot->IsPressed("RotateRight"))
     {
         m_facingAngleRad -= XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime;
     }
@@ -67,45 +97,45 @@ void Robot::Update(float elapsedTime)
     SimpleMath::Vector3 v = 
         SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, m_rotates[static_cast<int>(Parts::LEG)]);
 
-    // 上キーで前進
-    if (!kb.LeftShift && kb.Up)
+    // 前進
+    if (m_inputRobot->IsPressed("MoveForward"))
     {
         m_positions[static_cast<int>(Parts::LEG)] += v * MOVE_SPEED * elapsedTime;
     }
-    // 下キーで後進
-    if (!kb.LeftShift && kb.Down)
+    // 後進
+    if (m_inputRobot->IsPressed("MoveBackward"))
     {
         m_positions[static_cast<int>(Parts::LEG)] -= v * MOVE_SPEED * elapsedTime;
     }
 
-    // 左シフト＋左キーで体を回転
-    if (kb.LeftShift && kb.Left)
+    // 体を左回転
+    if (m_inputRobot->IsPressed("BodyRotateLeft"))
     {
         m_rotates[static_cast<int>(Parts::BODY)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitY, XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
-    // 左シフト＋右キーで体を回転
-    if (kb.LeftShift && kb.Right)
+    // 体を右回転
+    if (m_inputRobot->IsPressed("BodyRotateRight"))
     {
         m_rotates[static_cast<int>(Parts::BODY)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitY, -XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
     
-    // 左シフト＋上キーで左腕を回転
-    if (kb.LeftShift && kb.Up)
+    // 左腕を上回転
+    if (m_inputRobot->IsPressed("ArmLRotateUp"))
     {
         m_rotates[static_cast<int>(Parts::ARM_L)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitX, XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
-    // 左シフト＋下キーで左腕を回転
-    if (kb.LeftShift && kb.Down)
+    // 左腕を下回転
+    if (m_inputRobot->IsPressed("ArmLRotateDown"))
     {
         m_rotates[static_cast<int>(Parts::ARM_L)] *= SimpleMath::Quaternion::CreateFromAxisAngle(
             SimpleMath::Vector3::UnitX, -XMConvertToRadians(ROTATE_SPEED_DEG) * elapsedTime);
     }
 
-    // スペースキーでミサイルを発射
-    if (kb.Space)
+    // ミサイルを発射
+    if (m_inputRobot->IsTriggered("ShootMissile"))
     {
         // 発射フラグ（ON）
         m_fireFlag = true;
@@ -137,8 +167,8 @@ void Robot::Update(float elapsedTime)
             SimpleMath::Vector3::Transform(velocity, m_rotates[static_cast<int>(Parts::MISSILE)]);
     }
 
-    // Zキーでミサイルをリセット
-    if (kb.Z)
+    // ミサイルをリセット
+    if (m_inputRobot->IsTriggered("ResetMissile"))
     {
         m_fireFlag = false;
         m_parentIndexes[static_cast<int>(Parts::MISSILE)] = static_cast<int>(Parts::ARM_L);
@@ -146,34 +176,47 @@ void Robot::Update(float elapsedTime)
         m_rotates[static_cast<int>(Parts::MISSILE)] = SimpleMath::Quaternion::Identity;
     }
 
+    // ----- 床とロボットの位置の線分との交差判定 ----- //
+    // ロボットの位置の線分
+    SimpleMath::Vector3 line[2] = {
+        { m_positions[static_cast<int>(Parts::LEG)].x,  5.0f, m_positions[static_cast<int>(Parts::LEG)].z },
+        { m_positions[static_cast<int>(Parts::LEG)].x, -5.0f, m_positions[static_cast<int>(Parts::LEG)].z },
+    };
+
+    // 床のモデルと線分の交差判定
+    SimpleMath::Vector3 hitPosition;
+    SimpleMath::Vector3 normal;
+    if (floor->IntersectLineSegment(line[0], line[1], &hitPosition, &normal))
+    {
+        // ロボットのY座標を設定する
+        SetPositionY(hitPosition.y);
+
+        // 床の法線方向へ傾けるクォータニオンを作成する
+        SimpleMath::Quaternion q = SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Up, normal);
+
+        // ロボットを傾ける
+        SetTilt(q);
+    }
+    // ------------------------------------------------ //
+
+    // 各パーツのワールド行列を作成
+    UpdateWorldMatrices();
+
+    // コリジョン情報を更新
+    for (size_t i = 0; i < PARTS_CNT; i++)
+    {
+        // パーツのワールド行列から移動量を取得
+        SimpleMath::Vector3 position = m_worldMatrices[i].Translation();
+        // パーツのワールド行列から回転量を取得
+        SimpleMath::Quaternion rotation = SimpleMath::Quaternion::CreateFromRotationMatrix(m_worldMatrices[i]);
+        // コリジョン情報を移動と回転をする
+        m_modelCollisions[i]->UpdateBoundingInfo(position, rotation);
+    }
 }
 
 // 描画
 void Robot::Render()
 {
-    // 各パーツの変換行列を作成
-    for (size_t i = 0; i < PARTS_CNT; i++)
-    {
-        m_transformMatrices[i] = SimpleMath::Matrix::CreateFromQuaternion(m_rotates[i])
-                               * SimpleMath::Matrix::CreateTranslation(m_positions[i]);
-    }
-
-    // 各パーツのワールド行列を作成
-    for (size_t i = 0; i < PARTS_CNT; i++)
-    {
-        // パーツの変換行列をコピー
-        m_worldMatrices[i] = m_transformMatrices[i];
-
-        // 親がいれば
-        if (m_parentIndexes[i] != -1)
-        {
-            // 初期化行列をかける
-            m_worldMatrices[i] *= m_initializeMatrices[i];
-            // 親のワールド行列をかける
-            m_worldMatrices[i] *= m_worldMatrices[m_parentIndexes[i]];
-        }
-    }
-
     // 各パーツの描画
     for (size_t i = 0; i < PARTS_CNT; i++)
     {
@@ -187,4 +230,62 @@ void Robot::Render()
 DirectX::SimpleMath::Vector3 Robot::GetPosition() const
 {
     return m_positions[static_cast<int>(Parts::LEG)];
+}
+
+// コリジョン情報を表示する関数
+void Robot::DisplayCollision(Imase::CollisionRenderer* pCollisionRenderer)
+{
+    for (size_t i = 0; i < PARTS_CNT; i++)
+    {
+        m_modelCollisions[i]->AddCollisionRenderer(pCollisionRenderer);
+    }
+}
+
+// Rayとの交差判定関数
+bool Robot::IsHitRay(DirectX::SimpleMath::Vector3 origin, DirectX::SimpleMath::Vector3 direction)
+{
+    float dis;
+
+    for (size_t i = 0; i < PARTS_CNT; i++)
+    {
+        if (m_modelCollisions[i]->Intersects(origin, direction, dis))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Frustumとの交差判定関数
+bool Robot::IsHitFrustum(DirectX::BoundingFrustum frustum)
+{
+    for (size_t i = 0; i < PARTS_CNT; i++)
+    {
+        if (m_modelCollisions[i]->Intersects(frustum))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+// 各パーツのワールド行列を更新する関数
+void Robot::UpdateWorldMatrices()
+{
+    // 各パーツのワールド行列を作成
+    for (size_t i = 0; i < PARTS_CNT; i++)
+    {
+        // 各パーツの移動と回転から行列を作成
+        m_worldMatrices[i] = SimpleMath::Matrix::CreateFromQuaternion(m_rotates[i]) *
+                             SimpleMath::Matrix::CreateTranslation(m_positions[i]);
+
+        // 親がいれば
+        if (m_parentIndexes[i] != -1)
+        {
+            // 初期化行列をかける
+            m_worldMatrices[i] *= m_initializeMatrices[i];
+            // 親のワールド行列をかける
+            m_worldMatrices[i] *= m_worldMatrices[m_parentIndexes[i]];
+        }
+    }
 }
